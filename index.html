@@ -1,0 +1,2441 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MiTube - Comparte tus Videos</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', Arial, sans-serif;
+            background-color: #0f0f0f;
+            color: #fff;
+        }
+
+        header {
+            background-color: #212121;
+            padding: 12px 24px;
+            box-shadow: none;
+            border-bottom: 1px solid #303030;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            gap: 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .header-center {
+            flex: 1;
+            max-width: 600px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .search-container {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 16px;
+            background-color: #121212;
+            border: 1px solid #303030;
+            border-right: none;
+            border-radius: 40px 0 0 40px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-input:focus {
+            border-color: #3ea6ff;
+            background-color: #0f0f0f;
+        }
+
+        .search-btn {
+            padding: 10px 24px;
+            background-color: #303030;
+            border: 1px solid #303030;
+            border-radius: 0 40px 40px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .search-btn:hover {
+            background-color: #3f3f3f;
+        }
+
+        .search-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ff0000;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .logo svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .upload-btn {
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .upload-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+        }
+
+        .video-card {
+            background: #212121;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: none;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .video-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .video-thumbnail {
+            width: 100%;
+            height: 180px;
+            background-color: #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .video-thumbnail img,
+        .video-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.2s;
+        }
+
+        .video-card:hover .video-thumbnail img,
+        .video-card:hover .video-thumbnail video {
+            transform: scale(1.05);
+        }
+
+        .video-duration {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background-color: rgba(0, 0, 0, 0.8);
+            color: #fff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .video-info {
+            padding: 12px;
+        }
+
+        .video-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .video-metadata {
+            font-size: 12px;
+            color: #aaa;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-bottom: 4px;
+        }
+
+        .video-metadata span:not(:last-child)::after {
+            content: '•';
+            margin-left: 4px;
+        }
+
+        .video-description {
+            font-size: 12px;
+            color: #aaa;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        /* Página de reproducción de video */
+        .watch-page {
+            display: none;
+            max-width: 1600px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .watch-page.active {
+            display: flex;
+            gap: 24px;
+        }
+
+        .primary-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .video-player {
+            width: 100%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .video-player iframe,
+        .video-player video {
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            max-height: 720px;
+            border: none;
+            display: block;
+        }
+
+        .video-details {
+            background: transparent;
+            padding: 20px 0;
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        .video-details-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .video-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #303030;
+        }
+
+        .action-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background-color: #272727;
+            border: none;
+            border-radius: 18px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #3f3f3f;
+        }
+
+        .action-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .action-btn.active {
+            background-color: #3ea6ff;
+        }
+
+        .video-details-metadata {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 16px;
+        }
+
+        .video-details-description {
+            font-size: 14px;
+            color: #f1f1f1;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            background: #272727;
+            padding: 16px;
+            border-radius: 12px;
+        }
+
+        .secondary-content {
+            width: 400px;
+            flex-shrink: 0;
+        }
+
+        .related-videos-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .related-video {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .related-video:hover {
+            background-color: #303030;
+        }
+
+        .related-thumbnail {
+            width: 168px;
+            height: 94px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .related-thumbnail img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .related-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .related-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            line-height: 1.4;
+        }
+
+        .related-description {
+            font-size: 12px;
+            color: #aaa;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #212121;
+            padding: 32px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #fff;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #303030;
+            background: #121212;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #ff0000;
+            background: #0f0f0f;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-cancel {
+            background-color: #3f3f3f;
+            color: #fff;
+        }
+
+        .btn-cancel:hover {
+            background-color: #4f4f4f;
+        }
+
+        .btn-submit {
+            background-color: #ff0000;
+            color: white;
+        }
+
+        .btn-submit:hover {
+            background-color: #cc0000;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aaa;
+        }
+
+        .empty-state svg {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 24px;
+            opacity: 0.3;
+        }
+
+        .empty-state h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* Estilos para Shorts */
+        .shorts-btn {
+            background-color: transparent;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s;
+        }
+
+        .shorts-btn:hover {
+            background-color: #3f3f3f;
+        }
+
+        .shorts-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .shorts-container {
+            display: none;
+            max-width: 1400px;
+            margin: 24px auto;
+            padding: 0 24px;
+        }
+
+        .shorts-container.active {
+            display: block;
+        }
+
+        .shorts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .short-card {
+            background: #212121;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s;
+            aspect-ratio: 9/16;
+            position: relative;
+        }
+
+        .short-card:hover {
+            transform: scale(1.02);
+        }
+
+        .short-thumbnail {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .short-thumbnail img,
+        .short-thumbnail video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .short-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: #fff;
+        }
+
+        .short-title {
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .short-views {
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        /* Visor de Shorts */
+        .shorts-viewer {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: #000;
+            z-index: 1000;
+        }
+
+        .shorts-viewer.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .shorts-viewer-content {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            background: #000;
+        }
+
+        .shorts-video-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .shorts-video-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .shorts-video-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .shorts-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        .shorts-close-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .shorts-info {
+            position: absolute;
+            bottom: 80px;
+            left: 20px;
+            right: 20px;
+            color: #fff;
+            z-index: 10;
+        }
+
+        .shorts-info-title {
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .shorts-info-meta {
+            font-size: 14px;
+            color: #aaa;
+        }
+
+        .shorts-actions {
+            position: absolute;
+            right: 20px;
+            bottom: 120px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        .shorts-action-btn {
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: #fff;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .shorts-action-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .shorts-action-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .shorts-action-btn span {
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .shorts-navigation {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .shorts-nav-btn {
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: all;
+            transition: background 0.2s;
+        }
+
+        .shorts-nav-btn:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .shorts-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .video-type-selector {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .type-option {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #303030;
+            background: #121212;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .type-option:hover {
+            border-color: #ff0000;
+        }
+
+        .type-option.selected {
+            border-color: #ff0000;
+            background: #1a0000;
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+        .type-option-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+        }
+
+        .type-option-label svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .type-option-label span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Estilos para comentarios */
+        .comments-section {
+            background: #212121;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .comments-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 12px;
+            background: #121212;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-family: inherit;
+            resize: none;
+            min-height: 40px;
+            max-height: 120px;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: #3ea6ff;
+        }
+
+        .comment-submit {
+            padding: 10px 20px;
+            background: #3ea6ff;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+            align-self: flex-end;
+        }
+
+        .comment-submit:hover {
+            background: #2d8fd8;
+        }
+
+        .comment-submit:disabled {
+            background: #3f3f3f;
+            cursor: not-allowed;
+        }
+
+        .comments-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .comment {
+            display: flex;
+            gap: 12px;
+        }
+
+        .comment-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 600;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .comment-content {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .comment-time {
+            font-size: 12px;
+            color: #aaa;
+            margin-left: 8px;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: #f1f1f1;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: #aaa;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .comment-action-btn:hover {
+            background: #3f3f3f;
+            color: #fff;
+        }
+
+        .comment-action-btn.liked {
+            color: #3ea6ff;
+        }
+
+        .comment-action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .no-comments {
+            text-align: center;
+            padding: 40px 20px;
+            color: #aaa;
+            font-size: 14px;
+        }
+
+        /* Comentarios en Shorts */
+        .shorts-comments {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            max-height: 60%;
+            background: linear-gradient(to top, rgba(0,0,0,0.98), rgba(0,0,0,0.95));
+            padding: 20px;
+            padding-top: 50px;
+            overflow-y: auto;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+            z-index: 15;
+            border-radius: 20px 20px 0 0;
+        }
+
+        .shorts-comments.active {
+            transform: translateY(0);
+        }
+
+        .shorts-comments-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .shorts-comments-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .shorts-comments-close {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
+        }
+
+        .shorts-comments-close:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .shorts-comments-close svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .shorts-comments-toggle {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            z-index: 10;
+            transition: background 0.2s;
+        }
+
+        .shorts-comments-toggle:hover {
+            background: rgba(0,0,0,0.8);
+        }
+
+        .shorts-comments-toggle svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Modal de nombre de usuario */
+        .username-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .username-modal.active {
+            display: flex;
+        }
+
+        .username-modal-content {
+            background: #212121;
+            padding: 32px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .username-modal-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 12px;
+        }
+
+        .username-modal-subtitle {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 24px;
+        }
+
+        .username-modal-input {
+            width: 100%;
+            padding: 12px;
+            background: #121212;
+            border: 1px solid #303030;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .username-modal-input:focus {
+            outline: none;
+            border-color: #3ea6ff;
+        }
+
+        .username-modal-btn {
+            width: 100%;
+            padding: 12px;
+            background: #3ea6ff;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .username-modal-btn:hover {
+            background: #2d8fd8;
+        }
+
+        .username-modal-btn:disabled {
+            background: #3f3f3f;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 1024px) {
+            .watch-page.active {
+                flex-direction: column;
+            }
+
+            .secondary-content {
+                width: 100%;
+            }
+            
+            .video-grid {
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 8px 12px;
+                gap: 12px;
+            }
+            
+            .header-center {
+                max-width: 100%;
+            }
+            
+            .search-input {
+                font-size: 14px;
+                padding: 8px 12px;
+            }
+            
+            .search-btn {
+                padding: 8px 16px;
+            }
+            
+            .upload-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+            
+            .upload-btn span {
+                display: none;
+            }
+            
+            .logo {
+                font-size: 20px;
+            }
+            
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .container {
+                padding: 0 12px;
+            }
+            
+            .related-thumbnail {
+                width: 140px;
+                height: 79px;
+            }
+            
+            .video-actions {
+                flex-wrap: wrap;
+            }
+            
+            .action-btn {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-left .logo span {
+                display: none;
+            }
+            
+            .video-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <div class="logo" onclick="goHome()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3-5.2 3z"/>
+                </svg>
+                <span>MiTube</span>
+            </div>
+            <button class="shorts-btn" onclick="goToShorts()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M10 20H14V4H10V20ZM4 20H8V10H4V20ZM16 9V20H20V9H16Z"/>
+                </svg>
+                Shorts
+            </button>
+        </div>
+        <div class="header-center">
+            <div class="search-container">
+                <input type="text" class="search-input" id="searchInput" placeholder="Buscar">
+                <button class="search-btn" onclick="searchVideos()">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <div class="header-right">
+            <button class="upload-btn" onclick="openUploadModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4v16m8-8H4"/>
+                    <path stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 4v16m8-8H4"/>
+                </svg>
+                <span>Subir Video</span>
+            </button>
+        </div>
+    </header>
+
+    <div class="container" id="homeContainer">
+        <div id="videoGrid" class="video-grid"></div>
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="3" width="20" height="14" rx="2"/>
+                <path d="M8 21h8M12 17v4"/>
+            </svg>
+            <h2>No hay videos aún</h2>
+            <p>¡Sé el primero en subir un video!</p>
+        </div>
+    </div>
+
+    <div class="shorts-container" id="shortsContainer">
+        <h2 style="color: #fff; font-size: 24px; margin-bottom: 24px;">Shorts</h2>
+        <div id="shortsGrid" class="shorts-grid"></div>
+        <div id="shortsEmptyState" class="empty-state" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20H14V4H10V20ZM4 20H8V10H4V20ZM16 9V20H20V9H16Z"/>
+            </svg>
+            <h2>No hay Shorts aún</h2>
+            <p>¡Sé el primero en subir un Short!</p>
+        </div>
+    </div>
+
+    <div class="watch-page" id="watchPage">
+        <div class="primary-content">
+            <div class="video-player" id="mainVideoPlayer"></div>
+            <div class="video-details">
+                <div class="video-details-title" id="watchTitle"></div>
+                <div class="video-details-metadata" id="watchMetadata"></div>
+                <div class="video-actions">
+                    <button class="action-btn" id="likeBtn" onclick="toggleLike()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M7 22V11M2 13v6c0 1.1.9 2 2 2h14.8c.8 0 1.5-.5 1.8-1.2l2.3-5.8c.1-.2.1-.4.1-.6V12c0-1.1-.9-2-2-2h-6.5l1-4.6c.1-.3 0-.6-.2-.9L14.8 4c-.3-.3-.7-.4-1.1-.2L7 8.3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <span id="likeCount">0</span>
+                    </button>
+                    <button class="action-btn" id="dislikeBtn" onclick="toggleDislike()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M17 2v11m5-2v-6c0-1.1-.9-2-2-2H5.2c-.8 0-1.5.5-1.8 1.2L1.1 9c-.1.2-.1.4-.1.6V11c0 1.1.9 2 2 2h6.5l-1 4.6c-.1.3 0 .6.2.9l.5.5c.3.3.7.4 1.1.2L17 15.7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="action-btn" onclick="shareVideo()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Compartir
+                    </button>
+                </div>
+                <div class="video-details-description" id="watchDescription"></div>
+                
+                <!-- Sección de comentarios -->
+                <div class="comments-section">
+                    <div class="comments-header" id="commentsCount">Comentarios</div>
+                    <div class="comment-form">
+                        <textarea class="comment-input" id="commentInput" placeholder="Agrega un comentario..."></textarea>
+                        <button class="comment-submit" id="commentSubmit" onclick="addComment()">Comentar</button>
+                    </div>
+                    <div class="comments-list" id="commentsList">
+                        <div class="no-comments">No hay comentarios aún. ¡Sé el primero en comentar!</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="secondary-content">
+            <div class="related-videos-title">Videos relacionados</div>
+            <div id="relatedVideos"></div>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Subir Contenido</div>
+            <form id="uploadForm">
+                <div class="video-type-selector">
+                    <label class="type-option selected" id="videoTypeOption">
+                        <input type="radio" name="contentType" value="video" checked>
+                        <div class="type-option-label">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3-5.2 3z"/>
+                            </svg>
+                            <span>Video</span>
+                        </div>
+                    </label>
+                    <label class="type-option" id="shortTypeOption">
+                        <input type="radio" name="contentType" value="short">
+                        <div class="type-option-label">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M10 20H14V4H10V20ZM4 20H8V10H4V20ZM16 9V20H20V9H16Z"/>
+                            </svg>
+                            <span>Short</span>
+                        </div>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label for="videoTitle">Título *</label>
+                    <input type="text" id="videoTitle" required placeholder="Ej: Mi video increíble">
+                </div>
+                <div class="form-group">
+                    <label for="videoUrl">URL *</label>
+                    <input type="url" id="videoUrl" required placeholder="YouTube, Vimeo, Dailymotion o video directo (.mp4)">
+                </div>
+                <div class="form-group">
+                    <label for="videoDescription">Descripción (opcional)</label>
+                    <textarea id="videoDescription" placeholder="Describe tu contenido..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-cancel" onclick="closeUploadModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-submit">Subir</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="shorts-viewer" id="shortsViewer">
+        <div class="shorts-viewer-content">
+            <button class="shorts-close-btn" onclick="closeShortsViewer()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 6L6 18M6 6l12 12"/>
+                </svg>
+            </button>
+            <div class="shorts-video-container" id="shortsVideoContainer"></div>
+            <div class="shorts-info">
+                <div class="shorts-info-title" id="shortsInfoTitle"></div>
+                <div class="shorts-info-meta" id="shortsInfoMeta"></div>
+            </div>
+            <button class="shorts-comments-toggle" onclick="toggleShortsComments()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                </svg>
+                <span id="shortsCommentsCount">Comentarios</span>
+            </button>
+            <div class="shorts-comments" id="shortsComments">
+                <div class="shorts-comments-header">
+                    <div class="shorts-comments-title" id="shortsCommentsTitle">Comentarios</div>
+                    <button class="shorts-comments-close" onclick="toggleShortsComments()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="comment-form">
+                    <textarea class="comment-input" id="shortCommentInput" placeholder="Agrega un comentario..."></textarea>
+                    <button class="comment-submit" onclick="addShortComment()">Comentar</button>
+                </div>
+                <div class="comments-list" id="shortCommentsList">
+                    <div class="no-comments">No hay comentarios aún</div>
+                </div>
+            </div>
+            <div class="shorts-actions">
+                <button class="shorts-action-btn" id="shortsLikeBtn" onclick="toggleShortLike()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M7 22V11M2 13v6c0 1.1.9 2 2 2h14.8c.8 0 1.5-.5 1.8-1.2l2.3-5.8c.1-.2.1-.4.1-.6V12c0-1.1-.9-2-2-2h-6.5l1-4.6c.1-.3 0-.6-.2-.9L14.8 4c-.3-.3-.7-.4-1.1-.2L7 8.3"/>
+                    </svg>
+                    <span id="shortsLikeCount">0</span>
+                </button>
+                <button class="shorts-action-btn" onclick="toggleShortDislike()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M17 2v11m5-2v-6c0-1.1-.9-2-2-2H5.2c-.8 0-1.5.5-1.8 1.2L1.1 9c-.1.2-.1.4-.1.6V11c0 1.1.9 2 2 2h6.5l-1 4.6c-.1.3 0 .6.2.9l.5.5c.3.3.7.4 1.1.2L17 15.7"/>
+                    </svg>
+                </button>
+                <button class="shorts-action-btn" onclick="shareShort()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="shorts-navigation">
+                <button class="shorts-nav-btn" id="shortsPrevBtn" onclick="navigateShort(-1)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 18l-6-6 6-6"/>
+                    </svg>
+                </button>
+                <button class="shorts-nav-btn" id="shortsNextBtn" onclick="navigateShort(1)">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de nombre de usuario -->
+    <div id="usernameModal" class="username-modal">
+        <div class="username-modal-content">
+            <div class="username-modal-title">¿Cómo te llamas?</div>
+            <div class="username-modal-subtitle">Necesitamos tu nombre para que puedas comentar</div>
+            <input type="text" id="usernameInput" class="username-modal-input" placeholder="Escribe tu nombre" maxlength="20">
+            <button id="usernameSubmit" class="username-modal-btn" onclick="saveUsername()">Continuar</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getDatabase, ref, set, push, get, update, onValue, remove } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js';
+        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZMSk5axFZ3Ff6Y6ww4xWfXbWj4sAYn1Y",
+            authDomain: "projetbet-bb07f.firebaseapp.com",
+            databaseURL: "https://projetbet-bb07f-default-rtdb.firebaseio.com",
+            projectId: "projetbet-bb07f",
+            storageBucket: "projetbet-bb07f.firebasestorage.app",
+            messagingSenderId: "662603070932",
+            appId: "1:662603070932:web:2d113f9b1fe20997ddea41",
+            measurementId: "G-QS3V43HKL5"
+        };
+        
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+        
+        // Hacer disponible globalmente
+        window.database = database;
+        window.dbRef = ref;
+        window.dbSet = set;
+        window.dbPush = push;
+        window.dbGet = get;
+        window.dbUpdate = update;
+        window.dbOnValue = onValue;
+        window.dbRemove = remove;
+        
+        // Disparar evento cuando Firebase esté listo
+        window.dispatchEvent(new Event('firebaseReady'));
+    </script>
+    
+    <script>
+        let videos = [];
+        let shorts = [];
+        let currentVideoIndex = null;
+        let currentShortIndex = null;
+        let filteredVideos = [];
+        let currentUser = null;
+        let currentUserId = null;
+        let pendingCommentAction = null;
+        let userLikes = {};
+        
+        // Cargar cuenta del usuario desde Firebase
+        async function loadUserAccount() {
+            const userId = sessionStorage.getItem('mitube_user_id');
+            if (!userId) return null;
+            
+            const userRef = window.dbRef(window.database, `cuentas/${userId}`);
+            const snapshot = await window.dbGet(userRef);
+            
+            if (snapshot.exists()) {
+                const userData = snapshot.val();
+                currentUser = userData.username;
+                currentUserId = userId;
+                userLikes = userData.likes || {};
+                return userData;
+            }
+            return null;
+        }
+        
+        // Crear nueva cuenta en Firebase
+        async function createUserAccount(username) {
+            const accountsRef = window.dbRef(window.database, 'cuentas');
+            const newAccountRef = window.dbPush(accountsRef);
+            const userId = newAccountRef.key;
+            
+            await window.dbSet(newAccountRef, {
+                username: username,
+                createdAt: Date.now(),
+                likes: {}
+            });
+            
+            // Guardar ID en sessionStorage
+            sessionStorage.setItem('mitube_user_id', userId);
+            currentUserId = userId;
+            currentUser = username;
+            userLikes = {};
+            
+            return userId;
+        }
+        
+        // Guardar likes del usuario en Firebase
+        async function saveUserLikes() {
+            if (!currentUserId) return;
+            const userLikesRef = window.dbRef(window.database, `cuentas/${currentUserId}/likes`);
+            await window.dbSet(userLikesRef, userLikes);
+        }
+        
+        // Cargar videos y shorts desde Firebase
+        function loadVideos() {
+            const videosRef = window.dbRef(window.database, 'videos');
+            window.dbOnValue(videosRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    videos = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).sort((a, b) => b.timestamp - a.timestamp);
+                } else {
+                    videos = [];
+                }
+                renderVideos();
+            });
+            
+            const shortsRef = window.dbRef(window.database, 'shorts');
+            window.dbOnValue(shortsRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    shorts = Object.keys(data).map(key => ({
+                        id: key,
+                        ...data[key]
+                    })).sort((a, b) => b.timestamp - a.timestamp);
+                } else {
+                    shorts = [];
+                }
+                renderShorts();
+            });
+        }
+        
+        // Guardar video en Firebase
+        async function saveVideo(video) {
+            const videosRef = window.dbRef(window.database, 'videos');
+            const newVideoRef = window.dbPush(videosRef);
+            await window.dbSet(newVideoRef, video);
+            return newVideoRef.key;
+        }
+        
+        // Guardar short en Firebase
+        async function saveShort(short) {
+            const shortsRef = window.dbRef(window.database, 'shorts');
+            const newShortRef = window.dbPush(shortsRef);
+            await window.dbSet(newShortRef, short);
+            return newShortRef.key;
+        }
+        
+        // Actualizar video en Firebase
+        async function updateVideo(videoId, updates) {
+            const videoRef = window.dbRef(window.database, `videos/${videoId}`);
+            await window.dbUpdate(videoRef, updates);
+        }
+        
+        // Actualizar short en Firebase
+        async function updateShort(shortId, updates) {
+            const shortRef = window.dbRef(window.database, `shorts/${shortId}`);
+            await window.dbUpdate(shortRef, updates);
+        }
+        
+        // Generar fecha relativa
+        function getRelativeTime(timestamp) {
+            const now = Date.now();
+            const diff = now - timestamp;
+            const seconds = Math.floor(diff / 1000);
+            const minutes = Math.floor(seconds / 60);
+            const hours = Math.floor(minutes / 60);
+            const days = Math.floor(hours / 24);
+            const months = Math.floor(days / 30);
+            const years = Math.floor(days / 365);
+            
+            if (years > 0) return `hace ${years} año${years > 1 ? 's' : ''}`;
+            if (months > 0) return `hace ${months} mes${months > 1 ? 'es' : ''}`;
+            if (days > 0) return `hace ${days} día${days > 1 ? 's' : ''}`;
+            if (hours > 0) return `hace ${hours} hora${hours > 1 ? 's' : ''}`;
+            if (minutes > 0) return `hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
+            return 'hace un momento';
+        }
+        
+        // Formatear número de vistas
+        function formatViews(views) {
+            if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M';
+            if (views >= 1000) return (views / 1000).toFixed(1) + 'K';
+            return views.toString();
+        }
+
+        function getYouTubeID(url) {
+            const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+            const match = url.match(regExp);
+            return (match && match[2].length === 11) ? match[2] : null;
+        }
+
+        function getVimeoID(url) {
+            const regExp = /vimeo.com\/(\d+)/;
+            const match = url.match(regExp);
+            return match ? match[1] : null;
+        }
+
+        function getDailymotionID(url) {
+            const regExp = /dailymotion.com\/video\/([^_]+)/;
+            const match = url.match(regExp);
+            return match ? match[1] : null;
+        }
+
+        function getVideoThumbnail(url) {
+            const youtubeId = getYouTubeID(url);
+            if (youtubeId) {
+                return `https://img.youtube.com/vi/${youtubeId}/mqdefault.jpg`;
+            }
+
+            const vimeoId = getVimeoID(url);
+            if (vimeoId) {
+                return `https://vumbnail.com/${vimeoId}.jpg`;
+            }
+
+            const dailymotionId = getDailymotionID(url);
+            if (dailymotionId) {
+                return `https://www.dailymotion.com/thumbnail/video/${dailymotionId}`;
+            }
+
+            // Para videos directos, usar el mismo video como thumbnail
+            // El navegador extraerá el primer frame
+            if (isDirectVideo(url)) {
+                return url;
+            }
+
+            return 'https://via.placeholder.com/320x180/1a1a1a/ffffff?text=Video';
+        }
+
+        function getVideoEmbedUrl(url) {
+            const youtubeId = getYouTubeID(url);
+            if (youtubeId) {
+                return `https://www.youtube.com/embed/${youtubeId}`;
+            }
+
+            const vimeoId = getVimeoID(url);
+            if (vimeoId) {
+                return `https://player.vimeo.com/video/${vimeoId}`;
+            }
+
+            const dailymotionId = getDailymotionID(url);
+            if (dailymotionId) {
+                return `https://www.dailymotion.com/embed/video/${dailymotionId}`;
+            }
+
+            if (url.match(/\.(mp4|webm|ogg)($|\?)/i) || url.includes('.mp4?') || url.includes('.webm?') || url.includes('.ogg?')) {
+                return url;
+            }
+
+            return url;
+        }
+
+        function isDirectVideo(url) {
+            return url.match(/\.(mp4|webm|ogg)($|\?)/i) || url.includes('.mp4?') || url.includes('.webm?') || url.includes('.ogg?');
+        }
+
+        function goHome() {
+            // Detener el video limpiando el reproductor
+            document.getElementById('mainVideoPlayer').innerHTML = '';
+            
+            document.getElementById('homeContainer').style.display = 'block';
+            document.getElementById('watchPage').classList.remove('active');
+            document.getElementById('shortsContainer').classList.remove('active');
+            currentVideoIndex = null;
+            
+            // Limpiar búsqueda si hay alguna activa
+            if (filteredVideos.length > 0) {
+                filteredVideos = [];
+                document.getElementById('searchInput').value = '';
+                renderVideos();
+            }
+        }
+
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+            document.getElementById('uploadForm').reset();
+        }
+
+        function searchVideos() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                filteredVideos = [];
+                renderVideos();
+                return;
+            }
+            
+            filteredVideos = videos.filter(video => 
+                video.title.toLowerCase().includes(query) || 
+                (video.description && video.description.toLowerCase().includes(query))
+            );
+            renderVideos();
+        }
+        
+        // Buscar al presionar Enter
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('searchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchVideos();
+                }
+            });
+        });
+        
+        async function toggleLike() {
+            if (!videos[currentVideoIndex]) return;
+            const video = videos[currentVideoIndex];
+            const currentState = userLikes[video.id];
+            
+            let likesChange = 0;
+            let dislikesChange = 0;
+            
+            if (currentState === 'like') {
+                // Quitar like
+                likesChange = -1;
+                userLikes[video.id] = null;
+            } else {
+                // Agregar like
+                likesChange = 1;
+                userLikes[video.id] = 'like';
+                
+                // Si tenía dislike, quitarlo
+                if (currentState === 'dislike') {
+                    dislikesChange = -1;
+                }
+            }
+            
+            // Actualizar UI
+            document.getElementById('likeBtn').classList.toggle('active', userLikes[video.id] === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('active', userLikes[video.id] === 'dislike');
+            
+            // Actualizar contadores locales
+            video.likes = (video.likes || 0) + likesChange;
+            video.dislikes = (video.dislikes || 0) + dislikesChange;
+            document.getElementById('likeCount').textContent = formatViews(video.likes);
+            
+            // Guardar en localStorage y Firebase
+            saveUserLikes();
+            await updateVideo(video.id, {
+                likes: video.likes,
+                dislikes: video.dislikes
+            });
+        }
+        
+        async function toggleDislike() {
+            if (!videos[currentVideoIndex]) return;
+            const video = videos[currentVideoIndex];
+            const currentState = userLikes[video.id];
+            
+            let likesChange = 0;
+            let dislikesChange = 0;
+            
+            if (currentState === 'dislike') {
+                // Quitar dislike
+                dislikesChange = -1;
+                userLikes[video.id] = null;
+            } else {
+                // Agregar dislike
+                dislikesChange = 1;
+                userLikes[video.id] = 'dislike';
+                
+                // Si tenía like, quitarlo
+                if (currentState === 'like') {
+                    likesChange = -1;
+                }
+            }
+            
+            // Actualizar UI
+            document.getElementById('likeBtn').classList.toggle('active', userLikes[video.id] === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('active', userLikes[video.id] === 'dislike');
+            
+            // Actualizar contadores locales
+            video.likes = (video.likes || 0) + likesChange;
+            video.dislikes = (video.dislikes || 0) + dislikesChange;
+            document.getElementById('likeCount').textContent = formatViews(video.likes);
+            
+            // Guardar en localStorage y Firebase
+            saveUserLikes();
+            await updateVideo(video.id, {
+                likes: video.likes,
+                dislikes: video.dislikes
+            });
+        }
+        
+        function shareVideo() {
+            if (!videos[currentVideoIndex]) return;
+            const video = videos[currentVideoIndex];
+            const shareText = `Mira este video: ${video.title}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: video.title,
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                // Fallback: copiar al portapapeles
+                navigator.clipboard.writeText(shareText + ' - ' + video.url);
+                alert('¡Enlace copiado al portapapeles!');
+            }
+        }
+        
+        function watchVideo(index) {
+            currentVideoIndex = index;
+            const displayVideos = filteredVideos.length > 0 ? filteredVideos : videos;
+            const video = displayVideos[index];
+            
+            // Incrementar vistas
+            const actualIndex = videos.findIndex(v => v === video);
+            if (actualIndex !== -1 && video.id) {
+                videos[actualIndex].views++;
+                updateVideo(video.id, { views: videos[actualIndex].views });
+            }
+            
+            document.getElementById('homeContainer').style.display = 'none';
+            document.getElementById('shortsContainer').classList.remove('active');
+            document.getElementById('watchPage').classList.add('active');
+            
+            document.getElementById('watchTitle').textContent = video.title;
+            document.getElementById('watchMetadata').textContent = `${formatViews(video.views)} vistas • ${getRelativeTime(video.timestamp)}`;
+            document.getElementById('watchDescription').textContent = video.description || 'Sin descripción';
+            
+            // Cargar estado de like del usuario desde localStorage
+            const userLikeState = userLikes[video.id];
+            document.getElementById('likeBtn').classList.toggle('active', userLikeState === 'like');
+            document.getElementById('dislikeBtn').classList.toggle('active', userLikeState === 'dislike');
+            document.getElementById('likeCount').textContent = formatViews(video.likes || 0);
+            
+            const embedUrl = getVideoEmbedUrl(video.url);
+            const playerElement = document.getElementById('mainVideoPlayer');
+            
+            if (isDirectVideo(video.url)) {
+                playerElement.innerHTML = `
+                    <video controls autoplay>
+                        <source src="${embedUrl}">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                `;
+            } else {
+                playerElement.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+            }
+            
+            renderRelatedVideos(actualIndex !== -1 ? actualIndex : index);
+            loadComments(video.id);
+            window.scrollTo(0, 0);
+        }
+        
+        // Funciones de comentarios
+        async function loadComments(videoId) {
+            const commentsRef = window.dbRef(window.database, `comments/videos/${videoId}`);
+            window.dbOnValue(commentsRef, (snapshot) => {
+                const data = snapshot.val();
+                const commentsList = document.getElementById('commentsList');
+                
+                if (!data) {
+                    commentsList.innerHTML = '<div class="no-comments">No hay comentarios aún. ¡Sé el primero en comentar!</div>';
+                    document.getElementById('commentsCount').textContent = 'Comentarios';
+                    return;
+                }
+                
+                const comments = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                })).sort((a, b) => b.timestamp - a.timestamp);
+                
+                document.getElementById('commentsCount').textContent = `${comments.length} Comentario${comments.length !== 1 ? 's' : ''}`;
+                
+                commentsList.innerHTML = comments.map(comment => `
+                    <div class="comment">
+                        <div class="comment-avatar">${comment.author.charAt(0).toUpperCase()}</div>
+                        <div class="comment-content">
+                            <div>
+                                <span class="comment-author">${comment.author}</span>
+                                <span class="comment-time">${getRelativeTime(comment.timestamp)}</span>
+                            </div>
+                            <div class="comment-text">${comment.text}</div>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+        
+        async function addComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            
+            if (!text || !videos[currentVideoIndex]) return;
+            
+            // Verificar si el usuario tiene nombre
+            if (!currentUser) {
+                pendingCommentAction = { type: 'video', text: text };
+                showUsernameModal();
+                return;
+            }
+            
+            const video = videos[currentVideoIndex];
+            const commentsRef = window.dbRef(window.database, `comments/videos/${video.id}`);
+            const newCommentRef = window.dbPush(commentsRef);
+            
+            await window.dbSet(newCommentRef, {
+                author: currentUser,
+                text: text,
+                timestamp: Date.now()
+            });
+            
+            input.value = '';
+        }
+
+        function renderRelatedVideos(currentIndex) {
+            const container = document.getElementById('relatedVideos');
+            const relatedVideos = videos.filter((v, i) => i !== currentIndex);
+            
+            if (relatedVideos.length === 0) {
+                container.innerHTML = '<p style="color: #aaa; font-size: 14px;">No hay más videos</p>';
+                return;
+            }
+            
+            container.innerHTML = relatedVideos.map((video, i) => {
+                const actualIndex = videos.findIndex(v => v === video);
+                const isDirectVid = isDirectVideo(video.url);
+                const thumbnailHTML = isDirectVid 
+                    ? `<video muted preload="metadata"><source src="${video.url}#t=0.5"></video>`
+                    : `<img src="${video.thumbnail}" alt="${video.title}">`;
+                
+                return `
+                    <div class="related-video" onclick="watchVideo(${actualIndex})">
+                        <div class="related-thumbnail">
+                            ${thumbnailHTML}
+                        </div>
+                        <div class="related-info">
+                            <div class="related-title">${video.title}</div>
+                            <div class="related-description">${formatViews(video.views || 0)} vistas • ${getRelativeTime(video.timestamp)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderVideos() {
+            const grid = document.getElementById('videoGrid');
+            const emptyState = document.getElementById('emptyState');
+            const displayVideos = filteredVideos.length > 0 ? filteredVideos : videos;
+            
+            if (displayVideos.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h2').textContent = filteredVideos.length === 0 && videos.length > 0 ? 'No se encontraron resultados' : 'No hay videos aún';
+                emptyState.querySelector('p').textContent = filteredVideos.length === 0 && videos.length > 0 ? 'Intenta con otra búsqueda' : '¡Sé el primero en subir un video!';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            grid.innerHTML = displayVideos.map((video, index) => {
+                const isDirectVid = isDirectVideo(video.url);
+                const thumbnailHTML = isDirectVid 
+                    ? `<video muted preload="metadata"><source src="${video.url}#t=0.5"></video>`
+                    : `<img src="${video.thumbnail}" alt="${video.title}">`;
+                
+                return `
+                    <div class="video-card" onclick="watchVideo(${index})">
+                        <div class="video-thumbnail">
+                            ${thumbnailHTML}
+                        </div>
+                        <div class="video-info">
+                            <div class="video-title">${video.title}</div>
+                            <div class="video-metadata">
+                                <span>${formatViews(video.views || 0)} vistas</span>
+                                <span>${getRelativeTime(video.timestamp)}</span>
+                            </div>
+                            ${video.description ? `<div class="video-description">${video.description}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Funciones para Shorts
+        function goToShorts() {
+            document.getElementById('homeContainer').style.display = 'none';
+            document.getElementById('watchPage').classList.remove('active');
+            document.getElementById('shortsContainer').classList.add('active');
+            document.getElementById('mainVideoPlayer').innerHTML = '';
+            renderShorts();
+        }
+        
+        function renderShorts() {
+            const grid = document.getElementById('shortsGrid');
+            const emptyState = document.getElementById('shortsEmptyState');
+            
+            if (shorts.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            grid.innerHTML = shorts.map((short, index) => {
+                const isDirectVid = isDirectVideo(short.url);
+                const thumbnailHTML = isDirectVid 
+                    ? `<video muted preload="metadata"><source src="${short.url}#t=0.5"></video>`
+                    : `<img src="${short.thumbnail}" alt="${short.title}">`;
+                
+                return `
+                    <div class="short-card" onclick="watchShort(${index})">
+                        <div class="short-thumbnail">
+                            ${thumbnailHTML}
+                        </div>
+                        <div class="short-overlay">
+                            <div class="short-title">${short.title}</div>
+                            <div class="short-views">${formatViews(short.views || 0)} vistas</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        function watchShort(index) {
+            currentShortIndex = index;
+            const short = shorts[index];
+            
+            // Incrementar vistas
+            if (short.id) {
+                shorts[index].views++;
+                updateShort(short.id, { views: shorts[index].views });
+            }
+            
+            document.getElementById('shortsViewer').classList.add('active');
+            document.getElementById('shortsInfoTitle').textContent = short.title;
+            document.getElementById('shortsInfoMeta').textContent = `${formatViews(short.views)} vistas • ${getRelativeTime(short.timestamp)}`;
+            
+            const embedUrl = getVideoEmbedUrl(short.url);
+            const container = document.getElementById('shortsVideoContainer');
+            
+            if (isDirectVideo(short.url)) {
+                container.innerHTML = `
+                    <video controls autoplay loop>
+                        <source src="${embedUrl}">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                `;
+            } else {
+                container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+            }
+            
+            // Cargar estado de like del usuario desde localStorage
+            const userLikeState = userLikes[short.id];
+            document.getElementById('shortsLikeBtn').classList.toggle('active', userLikeState === 'like');
+            document.getElementById('shortsLikeCount').textContent = formatViews(short.likes || 0);
+            
+            // Actualizar navegación
+            document.getElementById('shortsPrevBtn').disabled = index === 0;
+            document.getElementById('shortsNextBtn').disabled = index === shorts.length - 1;
+            
+            // Cargar comentarios
+            loadShortComments(short.id);
+        }
+        
+        // Funciones de comentarios para Shorts
+        async function loadShortComments(shortId) {
+            const commentsRef = window.dbRef(window.database, `comments/shorts/${shortId}`);
+            window.dbOnValue(commentsRef, (snapshot) => {
+                const data = snapshot.val();
+                const commentsList = document.getElementById('shortCommentsList');
+                
+                if (!data) {
+                    commentsList.innerHTML = '<div class="no-comments">No hay comentarios aún</div>';
+                    document.getElementById('shortsCommentsCount').textContent = 'Comentarios';
+                    return;
+                }
+                
+                const comments = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                })).sort((a, b) => b.timestamp - a.timestamp);
+                
+                document.getElementById('shortsCommentsCount').textContent = `${comments.length}`;
+                document.getElementById('shortsCommentsTitle').textContent = `${comments.length} Comentario${comments.length !== 1 ? 's' : ''}`;
+                
+                commentsList.innerHTML = comments.map(comment => `
+                    <div class="comment">
+                        <div class="comment-avatar">${comment.author.charAt(0).toUpperCase()}</div>
+                        <div class="comment-content">
+                            <div>
+                                <span class="comment-author">${comment.author}</span>
+                                <span class="comment-time">${getRelativeTime(comment.timestamp)}</span>
+                            </div>
+                            <div class="comment-text">${comment.text}</div>
+                        </div>
+                    </div>
+                `).join('');
+            });
+        }
+        
+        async function addShortComment() {
+            const input = document.getElementById('shortCommentInput');
+            const text = input.value.trim();
+            
+            if (!text || currentShortIndex === null) return;
+            
+            // Verificar si el usuario tiene nombre
+            if (!currentUser) {
+                pendingCommentAction = { type: 'short', text: text };
+                showUsernameModal();
+                return;
+            }
+            
+            const short = shorts[currentShortIndex];
+            const commentsRef = window.dbRef(window.database, `comments/shorts/${short.id}`);
+            const newCommentRef = window.dbPush(commentsRef);
+            
+            await window.dbSet(newCommentRef, {
+                author: currentUser,
+                text: text,
+                timestamp: Date.now()
+            });
+            
+            input.value = '';
+        }
+        
+        function toggleShortsComments() {
+            document.getElementById('shortsComments').classList.toggle('active');
+        }
+        
+        // Funciones de nombre de usuario
+        function showUsernameModal() {
+            document.getElementById('usernameModal').classList.add('active');
+            document.getElementById('usernameInput').focus();
+        }
+        
+        async function saveUsername() {
+            const input = document.getElementById('usernameInput');
+            const username = input.value.trim();
+            
+            if (!username) {
+                alert('Por favor ingresa tu nombre');
+                return;
+            }
+            
+            // Deshabilitar botón mientras se crea la cuenta
+            const submitBtn = document.getElementById('usernameSubmit');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creando cuenta...';
+            
+            try {
+                // Crear cuenta en Firebase
+                await createUserAccount(username);
+                
+                // Cerrar modal
+                document.getElementById('usernameModal').classList.remove('active');
+                input.value = '';
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Continuar';
+                
+                // Ejecutar acción pendiente si existe
+                if (pendingCommentAction) {
+                    if (pendingCommentAction.type === 'video') {
+                        const input = document.getElementById('commentInput');
+                        input.value = pendingCommentAction.text;
+                        addComment();
+                    } else if (pendingCommentAction.type === 'short') {
+                        const input = document.getElementById('shortCommentInput');
+                        input.value = pendingCommentAction.text;
+                        addShortComment();
+                    }
+                    pendingCommentAction = null;
+                }
+            } catch (error) {
+                console.error('Error al crear cuenta:', error);
+                alert('Error al crear cuenta. Inténtalo de nuevo.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Continuar';
+            }
+        }
+        
+        // Permitir Enter para enviar nombre
+        document.addEventListener('DOMContentLoaded', function() {
+            const usernameInput = document.getElementById('usernameInput');
+            if (usernameInput) {
+                usernameInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        saveUsername();
+                    }
+                });
+            }
+        });
+        
+        function closeShortsViewer() {
+            document.getElementById('shortsViewer').classList.remove('active');
+            document.getElementById('shortsVideoContainer').innerHTML = '';
+            currentShortIndex = null;
+        }
+        
+        function navigateShort(direction) {
+            if (currentShortIndex === null) return;
+            const newIndex = currentShortIndex + direction;
+            if (newIndex >= 0 && newIndex < shorts.length) {
+                watchShort(newIndex);
+            }
+        }
+        
+        async function toggleShortLike() {
+            if (currentShortIndex === null) return;
+            const short = shorts[currentShortIndex];
+            const currentState = userLikes[short.id];
+            
+            let likesChange = 0;
+            let dislikesChange = 0;
+            
+            if (currentState === 'like') {
+                // Quitar like
+                likesChange = -1;
+                userLikes[short.id] = null;
+            } else {
+                // Agregar like
+                likesChange = 1;
+                userLikes[short.id] = 'like';
+                
+                // Si tenía dislike, quitarlo
+                if (currentState === 'dislike') {
+                    dislikesChange = -1;
+                }
+            }
+            
+            // Actualizar UI
+            document.getElementById('shortsLikeBtn').classList.toggle('active', userLikes[short.id] === 'like');
+            
+            // Actualizar contadores locales
+            short.likes = (short.likes || 0) + likesChange;
+            short.dislikes = (short.dislikes || 0) + dislikesChange;
+            document.getElementById('shortsLikeCount').textContent = formatViews(short.likes);
+            
+            // Guardar en localStorage y Firebase
+            saveUserLikes();
+            await updateShort(short.id, {
+                likes: short.likes,
+                dislikes: short.dislikes
+            });
+        }
+        
+        async function toggleShortDislike() {
+            if (currentShortIndex === null) return;
+            const short = shorts[currentShortIndex];
+            const currentState = userLikes[short.id];
+            
+            let likesChange = 0;
+            let dislikesChange = 0;
+            
+            if (currentState === 'dislike') {
+                // Quitar dislike
+                dislikesChange = -1;
+                userLikes[short.id] = null;
+            } else {
+                // Agregar dislike
+                dislikesChange = 1;
+                userLikes[short.id] = 'dislike';
+                
+                // Si tenía like, quitarlo
+                if (currentState === 'like') {
+                    likesChange = -1;
+                }
+            }
+            
+            // Actualizar UI
+            document.getElementById('shortsLikeBtn').classList.toggle('active', userLikes[short.id] === 'like');
+            
+            // Actualizar contadores locales
+            short.likes = (short.likes || 0) + likesChange;
+            short.dislikes = (short.dislikes || 0) + dislikesChange;
+            document.getElementById('shortsLikeCount').textContent = formatViews(short.likes);
+            
+            // Guardar en localStorage y Firebase
+            saveUserLikes();
+            await updateShort(short.id, {
+                likes: short.likes,
+                dislikes: short.dislikes
+            });
+        }
+        
+        function shareShort() {
+            if (currentShortIndex === null) return;
+            const short = shorts[currentShortIndex];
+            const shareText = `Mira este Short: ${short.title}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: short.title,
+                    text: shareText,
+                    url: window.location.href
+                });
+            } else {
+                navigator.clipboard.writeText(shareText + ' - ' + short.url);
+                alert('¡Enlace copiado al portapapeles!');
+            }
+        }
+        
+        // Selector de tipo de contenido
+        document.getElementById('videoTypeOption').addEventListener('click', function() {
+            document.getElementById('videoTypeOption').classList.add('selected');
+            document.getElementById('shortTypeOption').classList.remove('selected');
+        });
+        
+        document.getElementById('shortTypeOption').addEventListener('click', function() {
+            document.getElementById('shortTypeOption').classList.add('selected');
+            document.getElementById('videoTypeOption').classList.remove('selected');
+        });
+        
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const title = document.getElementById('videoTitle').value;
+            const url = document.getElementById('videoUrl').value;
+            const description = document.getElementById('videoDescription').value;
+            const contentType = document.querySelector('input[name="contentType"]:checked').value;
+            
+            const newContent = {
+                title: title,
+                url: url,
+                description: description,
+                thumbnail: getVideoThumbnail(url),
+                timestamp: Date.now(),
+                views: 0,
+                likes: 0,
+                dislikes: 0,
+                userLiked: false,
+                userDisliked: false
+            };
+            
+            if (contentType === 'short') {
+                await saveShort(newContent);
+                goToShorts();
+            } else {
+                await saveVideo(newContent);
+                filteredVideos = [];
+                document.getElementById('searchInput').value = '';
+                goHome();
+            }
+            
+            closeUploadModal();
+        });
+
+        document.getElementById('uploadModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeUploadModal();
+            }
+        });
+
+        // Esperar a que Firebase esté listo antes de cargar
+        window.addEventListener('firebaseReady', async function() {
+            // Intentar cargar cuenta del usuario
+            await loadUserAccount();
+            
+            // Cargar videos
+            loadVideos();
+            
+            // Mostrar modal de nombre si no existe usuario
+            if (!currentUser) {
+                setTimeout(() => {
+                    showUsernameModal();
+                }, 500);
+            }
+        });
+        
+        // Si Firebase ya está listo (por si acaso)
+        if (window.database) {
+            (async () => {
+                // Intentar cargar cuenta del usuario
+                await loadUserAccount();
+                
+                // Cargar videos
+                loadVideos();
+                
+                // Mostrar modal de nombre si no existe usuario
+                if (!currentUser) {
+                    setTimeout(() => {
+                        showUsernameModal();
+                    }, 500);
+                }
+            })();
+        }
+    </script>
+</body>
+</html>
