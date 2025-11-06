@@ -1454,7 +1454,7 @@
     <div id="usernameModal" class="username-modal">
         <div class="username-modal-content">
             <div class="username-modal-title">¿Cómo te llamas?</div>
-            <div class="username-modal-subtitle">Necesitamos tu nombre para que puedas comentar</div>
+            <div class="username-modal-subtitle">Si ya tienes una cuenta, escribe el mismo nombre para recuperarla</div>
             <input type="text" id="usernameInput" class="username-modal-input" placeholder="Escribe tu nombre" maxlength="20">
             <button id="usernameSubmit" class="username-modal-btn" onclick="saveUsername()">Continuar</button>
         </div>
@@ -1524,6 +1524,23 @@
             return null;
         }
         
+        // Buscar cuenta existente por nombre de usuario
+        async function findUserByUsername(username) {
+            const accountsRef = window.dbRef(window.database, 'cuentas');
+            const snapshot = await window.dbGet(accountsRef);
+            
+            if (snapshot.exists()) {
+                const accounts = snapshot.val();
+                // Buscar cuenta con el mismo nombre (case-insensitive)
+                for (const [userId, userData] of Object.entries(accounts)) {
+                    if (userData.username.toLowerCase() === username.toLowerCase()) {
+                        return { userId, userData };
+                    }
+                }
+            }
+            return null;
+        }
+        
         // Crear nueva cuenta en Firebase
         async function createUserAccount(username) {
             const accountsRef = window.dbRef(window.database, 'cuentas');
@@ -1543,6 +1560,14 @@
             userLikes = {};
             
             return userId;
+        }
+        
+        // Cargar cuenta existente
+        async function loginUserAccount(userId, userData) {
+            sessionStorage.setItem('mitube_user_id', userId);
+            currentUserId = userId;
+            currentUser = userData.username;
+            userLikes = userData.likes || {};
         }
         
         // Guardar likes del usuario en Firebase
@@ -2195,14 +2220,26 @@
                 return;
             }
             
-            // Deshabilitar botón mientras se crea la cuenta
+            // Deshabilitar botón mientras se busca/crea la cuenta
             const submitBtn = document.getElementById('usernameSubmit');
             submitBtn.disabled = true;
-            submitBtn.textContent = 'Creando cuenta...';
+            submitBtn.textContent = 'Buscando cuenta...';
             
             try {
-                // Crear cuenta en Firebase
-                await createUserAccount(username);
+                // Buscar si ya existe una cuenta con ese nombre
+                const existingAccount = await findUserByUsername(username);
+                
+                if (existingAccount) {
+                    // Cargar cuenta existente
+                    submitBtn.textContent = '¡Cuenta encontrada!';
+                    await loginUserAccount(existingAccount.userId, existingAccount.userData);
+                    console.log('Cuenta cargada:', currentUser, '- Likes:', Object.keys(userLikes).length);
+                } else {
+                    // Crear nueva cuenta
+                    submitBtn.textContent = 'Creando cuenta...';
+                    await createUserAccount(username);
+                    console.log('Nueva cuenta creada:', currentUser);
+                }
                 
                 // Cerrar modal
                 document.getElementById('usernameModal').classList.remove('active');
@@ -2224,8 +2261,8 @@
                     pendingCommentAction = null;
                 }
             } catch (error) {
-                console.error('Error al crear cuenta:', error);
-                alert('Error al crear cuenta. Inténtalo de nuevo.');
+                console.error('Error al procesar cuenta:', error);
+                alert('Error al procesar cuenta. Inténtalo de nuevo.');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Continuar';
             }
