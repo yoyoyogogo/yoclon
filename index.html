@@ -144,24 +144,29 @@
         }
 
         .video-card {
-            background: #212121;
+            background: transparent;
             border-radius: 12px;
-            overflow: hidden;
+            overflow: visible;
             box-shadow: none;
-            transition: transform 0.2s, box-shadow 0.2s;
+            transition: all 0.2s;
             cursor: pointer;
+            padding: 0;
         }
 
         .video-card:hover {
             transform: translateY(-4px);
+            background: #212121;
+            padding: 12px;
+            margin: -12px;
         }
 
         .video-thumbnail {
             width: 100%;
-            height: 180px;
+            aspect-ratio: 16 / 9;
             background-color: #000;
             position: relative;
             overflow: hidden;
+            border-radius: 12px;
         }
 
         .video-thumbnail img,
@@ -190,7 +195,25 @@
         }
 
         .video-info {
-            padding: 12px;
+            padding: 12px 0;
+        }
+
+        .video-channel-info {
+            display: flex;
+            gap: 12px;
+        }
+
+        .channel-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            object-fit: cover;
+        }
+
+        .video-text-info {
+            flex: 1;
+            min-width: 0;
         }
 
         .video-title {
@@ -203,6 +226,12 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             line-height: 1.4;
+        }
+
+        .video-channel-name {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 2px;
         }
 
         .video-metadata {
@@ -279,13 +308,44 @@
             line-height: 1.4;
         }
 
+        .video-channel-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #303030;
+            gap: 16px;
+        }
+
+        .video-channel-info-watch {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .channel-avatar-watch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .channel-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .channel-name-watch {
+            font-size: 14px;
+            font-weight: 500;
+            color: #fff;
+        }
+
         .video-actions {
             display: flex;
             align-items: center;
             gap: 8px;
-            margin-bottom: 16px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #303030;
         }
 
         .action-btn {
@@ -368,7 +428,8 @@
             flex-shrink: 0;
         }
 
-        .related-thumbnail img {
+        .related-thumbnail img,
+        .related-thumbnail video {
             width: 100%;
             height: 100%;
             object-fit: cover;
@@ -389,6 +450,12 @@
             -webkit-box-orient: vertical;
             overflow: hidden;
             line-height: 1.4;
+        }
+
+        .related-uploader {
+            font-size: 12px;
+            color: #aaa;
+            margin-bottom: 2px;
         }
 
         .related-description {
@@ -596,6 +663,34 @@
             object-fit: cover;
         }
 
+        .short-play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            pointer-events: none;
+            transition: all 0.3s;
+        }
+
+        .short-card:hover .short-play-icon {
+            background: rgba(255,0,0,0.8);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .short-play-icon svg {
+            width: 30px;
+            height: 30px;
+            margin-left: 4px;
+        }
+
         .short-overlay {
             position: absolute;
             bottom: 0;
@@ -629,28 +724,147 @@
             left: 0;
             width: 100%;
             height: 100vh;
-            background: #000;
+            background: rgba(0,0,0,0.9);
             z-index: 1000;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         .shorts-viewer.active {
             display: flex;
-            justify-content: center;
+        }
+
+        /* Header en Shorts */
+        .shorts-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent);
+            display: flex;
             align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 1001;
+        }
+
+        .shorts-header .header-left {
+            flex: 1;
+        }
+
+        .shorts-header .header-center {
+            flex: 2;
+            max-width: 600px;
+        }
+
+        .shorts-header .header-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .shorts-header .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #fff;
+            font-size: 20px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .shorts-header .logo svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .shorts-header .search-container {
+            display: flex;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .shorts-header .search-input {
+            flex: 1;
+            padding: 10px 16px;
+            background-color: #121212;
+            border: 1px solid #303030;
+            border-right: none;
+            border-radius: 40px 0 0 40px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .shorts-header .search-input:focus {
+            border-color: #3ea6ff;
+            background-color: #0f0f0f;
+        }
+
+        .shorts-header .search-btn {
+            padding: 10px 24px;
+            background-color: #303030;
+            border: 1px solid #303030;
+            border-radius: 0 40px 40px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .shorts-header .search-btn:hover {
+            background-color: #3f3f3f;
+        }
+
+        .shorts-header .search-btn svg {
+            width: 20px;
+            height: 20px;
+            fill: #fff;
+        }
+
+        .shorts-header .icon-btn {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .shorts-header .icon-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        .shorts-header .icon-btn svg {
+            width: 20px;
+            height: 20px;
         }
 
         .shorts-viewer-content {
             position: relative;
-            width: 100%;
-            max-width: 500px;
-            height: 100vh;
+            width: 320px;
+            height: 520px;
             background: #000;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 60px;
         }
 
         .shorts-video-container {
             width: 100%;
             height: 100%;
             position: relative;
+            background: #000;
         }
 
         .shorts-video-container video {
@@ -689,31 +903,35 @@
 
         .shorts-info {
             position: absolute;
-            bottom: 80px;
-            left: 20px;
-            right: 20px;
+            bottom: 60px;
+            left: 12px;
+            right: 12px;
             color: #fff;
             z-index: 10;
         }
 
         .shorts-info-title {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: 500;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
         .shorts-info-meta {
-            font-size: 14px;
+            font-size: 12px;
             color: #aaa;
         }
 
         .shorts-actions {
             position: absolute;
-            right: 20px;
-            bottom: 120px;
+            right: 12px;
+            bottom: 100px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 14px;
             z-index: 10;
         }
 
@@ -721,8 +939,8 @@
             background: rgba(0,0,0,0.5);
             border: none;
             color: #fff;
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -737,24 +955,24 @@
         }
 
         .shorts-action-btn svg {
-            width: 24px;
-            height: 24px;
+            width: 20px;
+            height: 20px;
         }
 
         .shorts-action-btn span {
-            font-size: 11px;
+            font-size: 10px;
             margin-top: 2px;
         }
 
         .shorts-navigation {
             position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            transform: translateY(-50%);
+            top: 0;
+            bottom: 0;
+            right: 8px;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
-            padding: 0 10px;
+            padding: 80px 0;
             pointer-events: none;
             z-index: 10;
         }
@@ -763,8 +981,8 @@
             background: rgba(0,0,0,0.5);
             border: none;
             color: #fff;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
@@ -772,6 +990,11 @@
             justify-content: center;
             pointer-events: all;
             transition: background 0.2s;
+        }
+
+        .shorts-nav-btn svg {
+            width: 18px;
+            height: 18px;
         }
 
         .shorts-nav-btn:hover {
@@ -1046,20 +1269,20 @@
 
         .shorts-comments-toggle {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
+            bottom: 12px;
+            left: 12px;
             background: rgba(0,0,0,0.5);
             border: none;
             color: #fff;
-            padding: 10px 16px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 14px;
             cursor: pointer;
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 14px;
+            gap: 6px;
             z-index: 10;
             transition: background 0.2s;
+            font-size: 12px;
         }
 
         .shorts-comments-toggle:hover {
@@ -1067,8 +1290,8 @@
         }
 
         .shorts-comments-toggle svg {
-            width: 20px;
-            height: 20px;
+            width: 16px;
+            height: 16px;
         }
 
         /* Modal de nombre de usuario */
@@ -1210,8 +1433,15 @@
                 height: 79px;
             }
             
+            .video-channel-actions {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
             .video-actions {
                 flex-wrap: wrap;
+                width: 100%;
             }
             
             .action-btn {
@@ -1298,24 +1528,32 @@
             <div class="video-details">
                 <div class="video-details-title" id="watchTitle"></div>
                 <div class="video-details-metadata" id="watchMetadata"></div>
-                <div class="video-actions">
-                    <button class="action-btn" id="likeBtn" onclick="toggleLike()">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M7 22V11M2 13v6c0 1.1.9 2 2 2h14.8c.8 0 1.5-.5 1.8-1.2l2.3-5.8c.1-.2.1-.4.1-.6V12c0-1.1-.9-2-2-2h-6.5l1-4.6c.1-.3 0-.6-.2-.9L14.8 4c-.3-.3-.7-.4-1.1-.2L7 8.3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <span id="likeCount">0</span>
-                    </button>
-                    <button class="action-btn" id="dislikeBtn" onclick="toggleDislike()">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M17 2v11m5-2v-6c0-1.1-.9-2-2-2H5.2c-.8 0-1.5.5-1.8 1.2L1.1 9c-.1.2-.1.4-.1.6V11c0 1.1.9 2 2 2h6.5l-1 4.6c-.1.3 0 .6.2.9l.5.5c.3.3.7.4 1.1.2L17 15.7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
-                    <button class="action-btn" onclick="shareVideo()">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        Compartir
-                    </button>
+                <div class="video-channel-actions">
+                    <div class="video-channel-info-watch" id="channelInfo">
+                        <img src="" alt="Canal" class="channel-avatar-watch" id="channelAvatar">
+                        <div class="channel-text">
+                            <div class="channel-name-watch" id="channelName">Usuario</div>
+                        </div>
+                    </div>
+                    <div class="video-actions">
+                        <button class="action-btn" id="likeBtn" onclick="toggleLike()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M7 22V11M2 13v6c0 1.1.9 2 2 2h14.8c.8 0 1.5-.5 1.8-1.2l2.3-5.8c.1-.2.1-.4.1-.6V12c0-1.1-.9-2-2-2h-6.5l1-4.6c.1-.3 0-.6-.2-.9L14.8 4c-.3-.3-.7-.4-1.1-.2L7 8.3" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span id="likeCount">0</span>
+                        </button>
+                        <button class="action-btn" id="dislikeBtn" onclick="toggleDislike()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 2v11m5-2v-6c0-1.1-.9-2-2-2H5.2c-.8 0-1.5.5-1.8 1.2L1.1 9c-.1.2-.1.4-.1.6V11c0 1.1.9 2 2 2h6.5l-1 4.6c-.1.3 0 .6.2.9l.5.5c.3.3.7.4 1.1.2L17 15.7" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                        <button class="action-btn" onclick="shareVideo()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Compartir
+                        </button>
+                    </div>
                 </div>
                 <div class="video-details-description" id="watchDescription"></div>
                 
@@ -1383,12 +1621,36 @@
     </div>
 
     <div class="shorts-viewer" id="shortsViewer">
+        <!-- Header en Shorts -->
+        <header class="shorts-header">
+            <div class="header-left">
+                <div class="logo" onclick="closeShortsViewer()">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M10 20l-8-8 8-8 1.4 1.4L5.8 11H22v2H5.8l5.6 5.6L10 20z"/>
+                    </svg>
+                    <span>Shorts</span>
+                </div>
+            </div>
+            <div class="header-center">
+                <div class="search-container">
+                    <input type="text" class="search-input" id="shortsSearchInput" placeholder="Buscar shorts...">
+                    <button class="search-btn" onclick="searchShorts()">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" onclick="closeShortsViewer()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+        </header>
+        
         <div class="shorts-viewer-content">
-            <button class="shorts-close-btn" onclick="closeShortsViewer()">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-            </button>
             <div class="shorts-video-container" id="shortsVideoContainer"></div>
             <div class="shorts-info">
                 <div class="shorts-info-title" id="shortsInfoTitle"></div>
@@ -1438,12 +1700,12 @@
             <div class="shorts-navigation">
                 <button class="shorts-nav-btn" id="shortsPrevBtn" onclick="navigateShort(-1)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 18l-6-6 6-6"/>
+                        <path d="M18 15l-6-6-6 6"/>
                     </svg>
                 </button>
                 <button class="shorts-nav-btn" id="shortsNextBtn" onclick="navigateShort(1)">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M9 18l6-6-6-6"/>
+                        <path d="M6 9l6 6 6-6"/>
                     </svg>
                 </button>
             </div>
@@ -1773,11 +2035,42 @@
             renderVideos();
         }
         
+        // Buscar shorts
+        let filteredShorts = [];
+        
+        function searchShorts() {
+            const query = document.getElementById('shortsSearchInput').value.toLowerCase().trim();
+            if (!query) {
+                filteredShorts = [];
+                // Si estamos viendo un short, no hacer nada
+                return;
+            }
+            
+            filteredShorts = shorts.filter(short => 
+                short.title.toLowerCase().includes(query) || 
+                (short.description && short.description.toLowerCase().includes(query))
+            );
+            
+            // Si hay resultados, mostrar el primero
+            if (filteredShorts.length > 0) {
+                const firstIndex = shorts.findIndex(s => s.id === filteredShorts[0].id);
+                if (firstIndex !== -1) {
+                    watchShort(firstIndex);
+                }
+            }
+        }
+        
         // Buscar al presionar Enter
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('searchInput').addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {
                     searchVideos();
+                }
+            });
+            
+            document.getElementById('shortsSearchInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    searchShorts();
                 }
             });
         });
@@ -1900,6 +2193,11 @@
             document.getElementById('watchMetadata').textContent = `${formatViews(video.views)} vistas • ${getRelativeTime(video.timestamp)}`;
             document.getElementById('watchDescription').textContent = video.description || 'Sin descripción';
             
+            // Mostrar información del canal
+            const uploaderAvatar = video.uploaderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(video.uploadedBy || 'U') + '&background=3ea6ff&color=fff&size=128';
+            document.getElementById('channelAvatar').src = uploaderAvatar;
+            document.getElementById('channelName').textContent = video.uploadedBy || 'Usuario Anónimo';
+            
             // Cargar estado de like del usuario desde localStorage
             const userLikeState = userLikes[video.id];
             document.getElementById('likeBtn').classList.toggle('active', userLikeState === 'like');
@@ -2009,6 +2307,7 @@
                         </div>
                         <div class="related-info">
                             <div class="related-title">${video.title}</div>
+                            <div class="related-uploader">${video.uploadedBy || 'Usuario Anónimo'}</div>
                             <div class="related-description">${formatViews(video.views || 0)} vistas • ${getRelativeTime(video.timestamp)}</div>
                         </div>
                     </div>
@@ -2038,18 +2337,25 @@
                     ? `<video muted preload="metadata"><source src="${video.url}#t=0.5"></video>`
                     : `<img src="${video.thumbnail}" alt="${video.title}">`;
                 
+                const uploaderAvatar = video.uploaderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(video.uploadedBy || 'U') + '&background=3ea6ff&color=fff&size=128';
+                
                 return `
                     <div class="video-card" onclick="watchVideo(${index})">
                         <div class="video-thumbnail">
                             ${thumbnailHTML}
                         </div>
                         <div class="video-info">
-                            <div class="video-title">${video.title}</div>
-                            <div class="video-metadata">
-                                <span>${formatViews(video.views || 0)} vistas</span>
-                                <span>${getRelativeTime(video.timestamp)}</span>
+                            <div class="video-channel-info">
+                                <img src="${uploaderAvatar}" alt="${video.uploadedBy || 'Usuario'}" class="channel-avatar">
+                                <div class="video-text-info">
+                                    <div class="video-title">${video.title}</div>
+                                    <div class="video-channel-name">${video.uploadedBy || 'Usuario Anónimo'}</div>
+                                    <div class="video-metadata">
+                                        <span>${formatViews(video.views || 0)} vistas</span>
+                                        <span>${getRelativeTime(video.timestamp)}</span>
+                                    </div>
+                                </div>
                             </div>
-                            ${video.description ? `<div class="video-description">${video.description}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -2081,13 +2387,18 @@
             grid.innerHTML = shorts.map((short, index) => {
                 const isDirectVid = isDirectVideo(short.url);
                 const thumbnailHTML = isDirectVid 
-                    ? `<video muted preload="metadata"><source src="${short.url}#t=0.5"></video>`
+                    ? `<video muted preload="metadata" playsinline><source src="${short.url}#t=0.5"></video>`
                     : `<img src="${short.thumbnail}" alt="${short.title}">`;
                 
                 return `
                     <div class="short-card" onclick="watchShort(${index})">
                         <div class="short-thumbnail">
                             ${thumbnailHTML}
+                            <div class="short-play-icon">
+                                <svg viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M8 5v14l11-7z"/>
+                                </svg>
+                            </div>
                         </div>
                         <div class="short-overlay">
                             <div class="short-title">${short.title}</div>
@@ -2408,6 +2719,10 @@
             const description = document.getElementById('videoDescription').value;
             const contentType = document.querySelector('input[name="contentType"]:checked').value;
             
+            // Generar avatar para el usuario web
+            const uploaderName = currentUser || 'Usuario Anónimo';
+            const uploaderAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(uploaderName) + '&background=3ea6ff&color=fff&size=128';
+            
             const newContent = {
                 title: title,
                 url: url,
@@ -2418,7 +2733,9 @@
                 likes: 0,
                 dislikes: 0,
                 userLiked: false,
-                userDisliked: false
+                userDisliked: false,
+                uploadedBy: uploaderName,
+                uploaderAvatar: uploaderAvatar
             };
             
             if (contentType === 'short') {
@@ -2437,6 +2754,21 @@
         document.getElementById('uploadModal').addEventListener('click', function(e) {
             if (e.target === this) {
                 closeUploadModal();
+            }
+        });
+
+        // Soporte para teclas de flecha en Shorts
+        document.addEventListener('keydown', function(e) {
+            // Solo funcionar si el visor de Shorts está visible
+            const shortsViewer = document.getElementById('shortsViewer');
+            if (!shortsViewer || shortsViewer.style.display === 'none' || currentShortIndex === null) return;
+            
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                navigateShort(-1); // Short anterior
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                navigateShort(1); // Short siguiente
             }
         });
 
