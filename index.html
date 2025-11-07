@@ -25,10 +25,16 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 100;
             gap: 24px;
+        }
+
+        body {
+            padding-top: 60px;
         }
 
         .header-left {
@@ -131,10 +137,89 @@
             background-color: #cc0000;
         }
 
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+
+        .menu-btn:hover {
+            background-color: #3f3f3f;
+        }
+
+        .menu-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 60px;
+            width: 240px;
+            height: calc(100vh - 60px);
+            background-color: #212121;
+            padding: 12px 0;
+            overflow-y: auto;
+            z-index: 50;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.closed {
+            transform: translateX(-240px);
+        }
+
+        .sidebar-item {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            padding: 10px 24px;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sidebar-item:hover {
+            background-color: #3f3f3f;
+        }
+
+        .sidebar-item.active {
+            background-color: #3f3f3f;
+        }
+
+        .sidebar-item svg {
+            width: 24px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-separator {
+            height: 1px;
+            background-color: #303030;
+            margin: 12px 0;
+        }
+
         .container {
             max-width: 1400px;
             margin: 24px auto;
+            margin-left: 264px;
             padding: 0 24px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .container.sidebar-closed {
+            margin-left: 24px;
         }
 
         .video-grid {
@@ -275,12 +360,18 @@
             display: none;
             max-width: 1600px;
             margin: 24px auto;
+            margin-left: 264px;
             padding: 0 24px;
+            transition: margin-left 0.3s ease;
         }
 
         .watch-page.active {
             display: flex;
             gap: 24px;
+        }
+
+        .watch-page.sidebar-closed {
+            margin-left: 24px;
         }
 
         .primary-content {
@@ -360,6 +451,12 @@
             color: #3ea6ff;
         }
 
+        .channel-subscribers {
+            font-size: 12px;
+            color: #aaa;
+            margin-top: 2px;
+        }
+
         .channel-avatar-watch {
             cursor: pointer;
             transition: opacity 0.2s;
@@ -367,6 +464,32 @@
 
         .channel-avatar-watch:hover {
             opacity: 0.8;
+        }
+
+        .subscribe-btn {
+            background-color: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: auto;
+        }
+
+        .subscribe-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .subscribe-btn.subscribed {
+            background-color: #272727;
+            color: #fff;
+        }
+
+        .subscribe-btn.subscribed:hover {
+            background-color: #3f3f3f;
         }
 
         .video-actions {
@@ -649,11 +772,17 @@
             display: none;
             max-width: 1400px;
             margin: 24px auto;
+            margin-left: 264px;
             padding: 0 24px;
+            transition: margin-left 0.3s ease;
         }
 
         .shorts-container.active {
             display: block;
+        }
+
+        .shorts-container.sidebar-closed {
+            margin-left: 24px;
         }
 
         .shorts-grid {
@@ -1389,10 +1518,105 @@
             display: none;
             max-width: 1400px;
             margin: 0 auto;
+            margin-left: 240px;
+            transition: margin-left 0.3s ease;
         }
 
         .channel-page.active {
             display: block;
+        }
+
+        .channel-page.sidebar-closed {
+            margin-left: 0;
+        }
+
+        /* Página de Suscripciones */
+        .subscriptions-page {
+            display: none;
+            max-width: 1400px;
+            margin: 24px auto;
+            margin-left: 264px;
+            padding: 0 24px;
+            transition: margin-left 0.3s ease;
+        }
+
+        .subscriptions-page.active {
+            display: block;
+        }
+
+        .subscriptions-page.sidebar-closed {
+            margin-left: 24px;
+        }
+
+        .subscriptions-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 24px;
+        }
+
+        .channel-card {
+            background: #212121;
+            border-radius: 12px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .channel-card:hover {
+            background: #2a2a2a;
+            transform: translateY(-4px);
+        }
+
+        .channel-card-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+
+        .channel-card-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .channel-card-info {
+            width: 100%;
+        }
+
+        .channel-card-name {
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .channel-card-stats {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 16px;
+        }
+
+        .channel-card-subscribed {
+            background-color: #272727;
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .channel-card-subscribed:hover {
+            background-color: #3f3f3f;
         }
 
         .channel-banner {
@@ -1579,6 +1803,11 @@
             
             .container {
                 padding: 0 12px;
+                margin-left: auto;
+            }
+
+            .sidebar {
+                display: none;
             }
             
             .related-thumbnail {
@@ -1641,6 +1870,11 @@
 <body>
     <header>
         <div class="header-left">
+            <button class="menu-btn" onclick="toggleSidebar()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>
+                </svg>
+            </button>
             <div class="logo" onclick="goHome()">
                 <svg viewBox="0 0 24 24" fill="currentColor">
                     <path d="M21.58 7.19c-.23-.86-.91-1.54-1.77-1.77C18.25 5 12 5 12 5s-6.25 0-7.81.42c-.86.23-1.54.91-1.77 1.77C2 8.75 2 12 2 12s0 3.25.42 4.81c.23.86.91 1.54 1.77 1.77C5.75 19 12 19 12 19s6.25 0 7.81-.42c.86-.23 1.54-.91 1.77-1.77C22 15.25 22 12 22 12s0-3.25-.42-4.81zM10 15V9l5.2 3-5.2 3z"/>
@@ -1675,7 +1909,30 @@
         </div>
     </header>
 
-    <div class="container" id="homeContainer">
+    <!-- Sidebar -->
+    <div class="sidebar closed">
+        <div class="sidebar-item active" onclick="goHome()">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+            </svg>
+            <span>Inicio</span>
+        </div>
+        <div class="sidebar-item" onclick="goToShortsFeed()">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 20H14V4H10V20ZM4 20H8V10H4V20ZM16 9V20H20V9H16Z"/>
+            </svg>
+            <span>Shorts</span>
+        </div>
+        <div class="sidebar-separator"></div>
+        <div class="sidebar-item" onclick="goToSubscriptions()">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 7H4V6h16v1zm2 2v12H2V9h20zm-7 6l-5-3v6l5-3zm2-12H7v1h10V3z"/>
+            </svg>
+            <span>Suscripciones</span>
+        </div>
+    </div>
+
+    <div class="container sidebar-closed" id="homeContainer">
         <div id="videoGrid" class="video-grid"></div>
         <div id="emptyState" class="empty-state" style="display: none;">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1687,7 +1944,7 @@
         </div>
     </div>
 
-    <div class="shorts-container" id="shortsContainer">
+    <div class="shorts-container sidebar-closed" id="shortsContainer">
         <h2 style="color: #fff; font-size: 24px; margin-bottom: 24px;">Shorts</h2>
         <div id="shortsGrid" class="shorts-grid"></div>
         <div id="shortsEmptyState" class="empty-state" style="display: none;">
@@ -1699,7 +1956,7 @@
         </div>
     </div>
 
-    <div class="watch-page" id="watchPage">
+    <div class="watch-page sidebar-closed" id="watchPage">
         <div class="primary-content">
             <div class="video-player" id="mainVideoPlayer"></div>
             <div class="video-details">
@@ -1710,7 +1967,11 @@
                         <img src="" alt="Canal" class="channel-avatar-watch" id="channelAvatar">
                         <div class="channel-text">
                             <div class="channel-name-watch" id="channelName">Usuario</div>
+                            <div class="channel-subscribers" id="channelSubscribers">0 suscriptores</div>
                         </div>
+                        <button class="subscribe-btn" id="subscribeBtn" onclick="toggleSubscribe()">
+                            <span>Suscribirse</span>
+                        </button>
                     </div>
                     <div class="video-actions">
                         <button class="action-btn" id="likeBtn" onclick="toggleLike()">
@@ -1754,7 +2015,7 @@
     </div>
 
     <!-- Página de Canal -->
-    <div class="channel-page" id="channelPage">
+    <div class="channel-page sidebar-closed" id="channelPage">
         <div class="channel-banner" id="channelBanner"></div>
         <div class="channel-header">
             <div class="channel-avatar-large" id="channelAvatarLarge"></div>
@@ -1762,6 +2023,9 @@
                 <h1 class="channel-title" id="channelTitle">Canal</h1>
                 <div class="channel-stats" id="channelStats">0 videos</div>
             </div>
+            <button class="subscribe-btn" id="channelSubscribeBtn" onclick="toggleSubscribe()">
+                <span>Suscribirse</span>
+            </button>
         </div>
         <div class="channel-tabs">
             <button class="channel-tab active" onclick="showChannelTab('videos')">Videos</button>
@@ -1770,6 +2034,19 @@
         <div class="channel-content">
             <div class="channel-videos-grid" id="channelVideosGrid"></div>
             <div class="channel-shorts-grid" id="channelShortsGrid" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- Página de Suscripciones -->
+    <div class="subscriptions-page sidebar-closed" id="subscriptionsPage">
+        <h2 class="subscriptions-title">Suscripciones</h2>
+        <div id="subscriptionsGrid" class="video-grid"></div>
+        <div id="subscriptionsEmptyState" class="empty-state" style="display: none;">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20 7H4V6h16v1zm2 2v12H2V9h20zm-7 6l-5-3v6l5-3zm2-12H7v1h10V3z"/>
+            </svg>
+            <h2>No tienes suscripciones</h2>
+            <p>Suscríbete a canales para ver su contenido aquí</p>
         </div>
     </div>
 
@@ -1972,6 +2249,10 @@
         let currentUserId = null;
         let pendingCommentAction = null;
         let userLikes = {};
+        let userSubscriptions = {};
+        let currentChannelId = null;
+        let isShortsFeedMode = false; // Para saber si viene del feed de la sidebar
+        let shuffledShorts = []; // Array de shorts mezclados para el feed
         
         // Cargar cuenta del usuario desde Firebase
         async function loadUserAccount() {
@@ -2235,9 +2516,131 @@
             document.getElementById('shortsContainer').classList.remove('active');
             document.getElementById('watchPage').classList.remove('active');
             document.getElementById('channelPage').classList.remove('active');
+            document.getElementById('subscriptionsPage').classList.remove('active');
             document.getElementById('searchInput').value = '';
             filteredVideos = [];
             renderVideos();
+            
+            // Actualizar sidebar
+            updateSidebarActive('inicio');
+        }
+
+        function updateSidebarActive(page) {
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            sidebarItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (page === 'inicio') {
+                sidebarItems[0].classList.add('active');
+            } else if (page === 'shorts') {
+                sidebarItems[1].classList.add('active');
+            } else if (page === 'suscripciones') {
+                sidebarItems[2].classList.add('active');
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.sidebar');
+            const container = document.getElementById('homeContainer');
+            const shortsContainer = document.getElementById('shortsContainer');
+            const watchPage = document.getElementById('watchPage');
+            const channelPage = document.getElementById('channelPage');
+            const subscriptionsPage = document.getElementById('subscriptionsPage');
+            
+            sidebar.classList.toggle('closed');
+            container.classList.toggle('sidebar-closed');
+            shortsContainer.classList.toggle('sidebar-closed');
+            watchPage.classList.toggle('sidebar-closed');
+            channelPage.classList.toggle('sidebar-closed');
+            subscriptionsPage.classList.toggle('sidebar-closed');
+        }
+
+        function goToSubscriptions() {
+            // Detener el video limpiando el reproductor
+            document.getElementById('mainVideoPlayer').innerHTML = '';
+            
+            document.getElementById('homeContainer').style.display = 'none';
+            document.getElementById('shortsContainer').classList.remove('active');
+            document.getElementById('watchPage').classList.remove('active');
+            document.getElementById('channelPage').classList.remove('active');
+            document.getElementById('subscriptionsPage').classList.add('active');
+            
+            updateSidebarActive('suscripciones');
+            renderSubscriptions();
+        }
+
+        function renderSubscriptions() {
+            const grid = document.getElementById('subscriptionsGrid');
+            const emptyState = document.getElementById('subscriptionsEmptyState');
+            
+            if (!currentUser) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h2').textContent = 'Inicia sesión para ver tus suscripciones';
+                return;
+            }
+            
+            // Obtener IDs de canales suscritos
+            const subscribedChannelIds = Object.keys(userSubscriptions);
+            
+            if (subscribedChannelIds.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h2').textContent = 'No tienes suscripciones';
+                return;
+            }
+            
+            // Obtener información única de cada canal
+            const channelsMap = new Map();
+            
+            // Recorrer todos los videos y shorts para obtener info de canales
+            [...videos, ...shorts].forEach(content => {
+                const channelId = content.discordUserId || content.uploadedBy;
+                if (subscribedChannelIds.includes(channelId) && !channelsMap.has(channelId)) {
+                    channelsMap.set(channelId, {
+                        id: channelId,
+                        name: content.uploadedBy || 'Usuario Anónimo',
+                        avatar: content.uploaderAvatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(content.uploadedBy || 'U')}&background=3ea6ff&color=fff&size=128`,
+                        discordUserId: content.discordUserId
+                    });
+                }
+            });
+            
+            const channels = Array.from(channelsMap.values());
+            
+            if (channels.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h2').textContent = 'No se encontraron canales';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            grid.innerHTML = channels.map(channel => {
+                // Contar videos del canal
+                const channelVideos = videos.filter(v => 
+                    (v.discordUserId && v.discordUserId === channel.discordUserId) || 
+                    v.uploadedBy === channel.name
+                ).length;
+                
+                return `
+                    <div class="channel-card" onclick="goToChannel('${channel.discordUserId || ''}', '${channel.name}', '${channel.avatar}')">
+                        <div class="channel-card-avatar">
+                            <img src="${channel.avatar}" alt="${channel.name}">
+                        </div>
+                        <div class="channel-card-info">
+                            <div class="channel-card-name">${channel.name}</div>
+                            <div class="channel-card-stats">${channelVideos} video${channelVideos !== 1 ? 's' : ''}</div>
+                            <button class="channel-card-subscribed" onclick="event.stopPropagation();">
+                                <span>Suscrito</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
         function openUploadModal() {
@@ -2401,6 +2804,106 @@
                 alert('¡Enlace copiado al portapapeles!');
             }
         }
+
+        async function toggleSubscribe() {
+            if (!currentUser) {
+                showUsernameModal();
+                return;
+            }
+
+            if (!currentChannelId) return;
+
+            const subscribeBtn = document.getElementById('subscribeBtn');
+            const channelSubscribeBtn = document.getElementById('channelSubscribeBtn');
+            const isSubscribed = userSubscriptions[currentChannelId];
+
+            if (isSubscribed) {
+                // Desuscribirse
+                const subRef = window.dbRef(window.database, `suscripciones/${currentUserId}/${currentChannelId}`);
+                await window.dbRemove(subRef);
+                delete userSubscriptions[currentChannelId];
+                
+                if (subscribeBtn) {
+                    subscribeBtn.classList.remove('subscribed');
+                    subscribeBtn.querySelector('span').textContent = 'Suscribirse';
+                }
+                if (channelSubscribeBtn) {
+                    channelSubscribeBtn.classList.remove('subscribed');
+                    channelSubscribeBtn.querySelector('span').textContent = 'Suscribirse';
+                }
+            } else {
+                // Suscribirse
+                const subRef = window.dbRef(window.database, `suscripciones/${currentUserId}/${currentChannelId}`);
+                await window.dbSet(subRef, {
+                    channelId: currentChannelId,
+                    timestamp: Date.now()
+                });
+                userSubscriptions[currentChannelId] = true;
+                
+                if (subscribeBtn) {
+                    subscribeBtn.classList.add('subscribed');
+                    subscribeBtn.querySelector('span').textContent = 'Suscrito';
+                }
+                if (channelSubscribeBtn) {
+                    channelSubscribeBtn.classList.add('subscribed');
+                    channelSubscribeBtn.querySelector('span').textContent = 'Suscrito';
+                }
+            }
+            
+            // Actualizar contador de suscriptores
+            getChannelSubscribers(currentChannelId).then(count => {
+                const subsElement = document.getElementById('channelSubscribers');
+                if (subsElement) {
+                    subsElement.textContent = `${count} suscriptor${count !== 1 ? 'es' : ''}`;
+                }
+            });
+            
+            // Actualizar página de suscripciones si está activa
+            if (document.getElementById('subscriptionsPage').classList.contains('active')) {
+                renderSubscriptions();
+            }
+        }
+
+        async function loadUserSubscriptions() {
+            if (!currentUserId) return;
+            
+            const subsRef = window.dbRef(window.database, `suscripciones/${currentUserId}`);
+            window.dbOnValue(subsRef, (snapshot) => {
+                userSubscriptions = {};
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    Object.keys(data).forEach(channelId => {
+                        userSubscriptions[channelId] = true;
+                    });
+                }
+            });
+        }
+
+        async function getChannelSubscribers(channelId) {
+            if (!channelId) return 0;
+            
+            try {
+                const subsRef = window.dbRef(window.database, 'suscripciones');
+                const snapshot = await window.dbGet(subsRef);
+                
+                if (!snapshot.exists()) return 0;
+                
+                let count = 0;
+                const allSubs = snapshot.val();
+                
+                // Contar cuántos usuarios tienen este canal en sus suscripciones
+                Object.values(allSubs).forEach(userSubs => {
+                    if (userSubs[channelId]) {
+                        count++;
+                    }
+                });
+                
+                return count;
+            } catch (error) {
+                console.error('Error al obtener suscriptores:', error);
+                return 0;
+            }
+        }
         
         function watchVideo(index) {
             currentVideoIndex = index;
@@ -2428,6 +2931,27 @@
             document.getElementById('channelAvatar').onclick = () => goToChannel(video.discordUserId || '', video.uploadedBy || 'Usuario Anónimo', uploaderAvatar);
             document.getElementById('channelName').textContent = video.uploadedBy || 'Usuario Anónimo';
             document.getElementById('channelName').onclick = () => goToChannel(video.discordUserId || '', video.uploadedBy || 'Usuario Anónimo', uploaderAvatar);
+            
+            // Establecer canal actual y actualizar botón de suscripción
+            currentChannelId = video.discordUserId || video.uploadedBy;
+            const subscribeBtn = document.getElementById('subscribeBtn');
+            if (subscribeBtn) {
+                if (userSubscriptions[currentChannelId]) {
+                    subscribeBtn.classList.add('subscribed');
+                    subscribeBtn.querySelector('span').textContent = 'Suscrito';
+                } else {
+                    subscribeBtn.classList.remove('subscribed');
+                    subscribeBtn.querySelector('span').textContent = 'Suscribirse';
+                }
+            }
+            
+            // Cargar y mostrar contador de suscriptores
+            getChannelSubscribers(currentChannelId).then(count => {
+                const subsElement = document.getElementById('channelSubscribers');
+                if (subsElement) {
+                    subsElement.textContent = `${count} suscriptor${count !== 1 ? 'es' : ''}`;
+                }
+            });
             
             // Cargar estado de like del usuario desde localStorage
             const userLikeState = userLikes[video.id];
@@ -2604,9 +3128,45 @@
             document.getElementById('homeContainer').style.display = 'none';
             document.getElementById('watchPage').classList.remove('active');
             document.getElementById('channelPage').classList.remove('active');
+            document.getElementById('subscriptionsPage').classList.remove('active');
             document.getElementById('shortsContainer').classList.add('active');
             document.getElementById('mainVideoPlayer').innerHTML = '';
             renderShorts();
+            
+            // No actualizar sidebar porque este es del header
+        }
+
+        function goToShortsFeed() {
+            // Detener video si está reproduciéndose
+            const playerElement = document.getElementById('mainVideoPlayer');
+            if (playerElement) {
+                playerElement.innerHTML = '';
+            }
+            
+            document.getElementById('homeContainer').style.display = 'none';
+            document.getElementById('watchPage').classList.remove('active');
+            document.getElementById('channelPage').classList.remove('active');
+            document.getElementById('subscriptionsPage').classList.remove('active');
+            document.getElementById('shortsContainer').classList.remove('active');
+            
+            // Actualizar sidebar
+            updateSidebarActive('shorts');
+            
+            // Marcar que estamos en modo feed
+            isShortsFeedMode = true;
+            
+            // Abrir feed de shorts aleatorios
+            if (shorts.length === 0) {
+                alert('No hay shorts disponibles');
+                return;
+            }
+            
+            // Mezclar shorts aleatoriamente y guardar en variable global
+            shuffledShorts = [...shorts].sort(() => Math.random() - 0.5);
+            
+            // Abrir el primer short del array mezclado
+            currentShortIndex = 0;
+            watchShortFromFeed(0);
         }
         
         function renderShorts() {
@@ -2629,7 +3189,7 @@
                     : `<img src="${short.thumbnail}" alt="${short.title}">`;
                 
                 return `
-                    <div class="short-card" onclick="watchShort(${index})">
+                    <div class="short-card" onclick="watchShort(${index}, true)">
                         <div class="short-thumbnail">
                             ${thumbnailHTML}
                             <div class="short-play-icon">
@@ -2647,9 +3207,14 @@
             }).join('');
         }
         
-        function watchShort(index) {
+        function watchShort(index, fromGrid = false) {
             currentShortIndex = index;
             const short = shorts[index];
+            
+            // Si viene del grid, NO es modo feed
+            if (fromGrid) {
+                isShortsFeedMode = false;
+            }
             
             // Incrementar vistas
             if (short.id) {
@@ -2683,6 +3248,50 @@
             // Actualizar navegación
             document.getElementById('shortsPrevBtn').disabled = index === 0;
             document.getElementById('shortsNextBtn').disabled = index === shorts.length - 1;
+            
+            // Cargar comentarios
+            loadShortComments(short.id);
+        }
+
+        function watchShortFromFeed(feedIndex) {
+            if (feedIndex < 0 || feedIndex >= shuffledShorts.length) return;
+            
+            currentShortIndex = feedIndex;
+            const short = shuffledShorts[feedIndex];
+            
+            // Encontrar el índice real en el array original para incrementar vistas
+            const realIndex = shorts.findIndex(s => s.id === short.id);
+            if (realIndex !== -1 && short.id) {
+                shorts[realIndex].views++;
+                updateShort(short.id, { views: shorts[realIndex].views });
+            }
+            
+            document.getElementById('shortsViewer').classList.add('active');
+            document.getElementById('shortsInfoTitle').textContent = short.title;
+            document.getElementById('shortsInfoMeta').textContent = `${formatViews(short.views)} vistas • ${getRelativeTime(short.timestamp)}`;
+            
+            const embedUrl = getVideoEmbedUrl(short.url);
+            const container = document.getElementById('shortsVideoContainer');
+            
+            if (isDirectVideo(short.url)) {
+                container.innerHTML = `
+                    <video controls autoplay loop>
+                        <source src="${embedUrl}">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                `;
+            } else {
+                container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+            }
+            
+            // Cargar estado de like del usuario desde localStorage
+            const userLikeState = userLikes[short.id];
+            document.getElementById('shortsLikeBtn').classList.toggle('active', userLikeState === 'like');
+            document.getElementById('shortsLikeCount').textContent = formatViews(short.likes || 0);
+            
+            // Actualizar navegación
+            document.getElementById('shortsPrevBtn').disabled = feedIndex === 0;
+            document.getElementById('shortsNextBtn').disabled = feedIndex === shuffledShorts.length - 1;
             
             // Cargar comentarios
             loadShortComments(short.id);
@@ -2835,19 +3444,40 @@
             document.getElementById('shortsViewer').classList.remove('active');
             document.getElementById('shortsVideoContainer').innerHTML = '';
             currentShortIndex = null;
+            
+            // Solo ir al inicio si estamos en modo feed (desde sidebar)
+            // Si viene del grid de shorts, volver al grid
+            if (isShortsFeedMode) {
+                goHome();
+                isShortsFeedMode = false; // Resetear el modo
+            } else {
+                // Volver al grid de shorts
+                goToShorts();
+            }
         }
         
         function navigateShort(direction) {
             if (currentShortIndex === null) return;
             const newIndex = currentShortIndex + direction;
-            if (newIndex >= 0 && newIndex < shorts.length) {
-                watchShort(newIndex);
+            
+            // Si estamos en modo feed, usar el array mezclado
+            if (isShortsFeedMode && shuffledShorts.length > 0) {
+                if (newIndex >= 0 && newIndex < shuffledShorts.length) {
+                    watchShortFromFeed(newIndex);
+                }
+            } else {
+                // Modo normal (desde grid)
+                if (newIndex >= 0 && newIndex < shorts.length) {
+                    watchShort(newIndex);
+                }
             }
         }
         
         async function toggleShortLike() {
             if (currentShortIndex === null) return;
-            const short = shorts[currentShortIndex];
+            
+            // Obtener el short correcto según el modo
+            const short = isShortsFeedMode ? shuffledShorts[currentShortIndex] : shorts[currentShortIndex];
             const currentState = userLikes[short.id];
             
             let likesChange = 0;
@@ -2997,11 +3627,45 @@
             }
         });
 
-        // Soporte para teclas de flecha en Shorts
+        // Soporte para teclas en videos y shorts
         document.addEventListener('keydown', function(e) {
-            // Solo funcionar si el visor de Shorts está visible
+            // Evitar que funcione si estamos escribiendo en un input
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+            
+            // Barra espaciadora para pausar/reproducir
+            if (e.code === 'Space') {
+                e.preventDefault();
+                
+                // Verificar si estamos en el visor de shorts
+                const shortsViewer = document.getElementById('shortsViewer');
+                if (shortsViewer && shortsViewer.classList.contains('active')) {
+                    const shortsVideo = document.querySelector('#shortsVideoContainer video');
+                    if (shortsVideo) {
+                        if (shortsVideo.paused) {
+                            shortsVideo.play();
+                        } else {
+                            shortsVideo.pause();
+                        }
+                    }
+                } else {
+                    // Verificar si estamos en la página de reproducción de video
+                    const watchPage = document.getElementById('watchPage');
+                    if (watchPage && watchPage.classList.contains('active')) {
+                        const mainVideo = document.querySelector('#mainVideoPlayer video');
+                        if (mainVideo) {
+                            if (mainVideo.paused) {
+                                mainVideo.play();
+                            } else {
+                                mainVideo.pause();
+                            }
+                        }
+                    }
+                }
+            }
+            
+            // Flechas para navegar en Shorts
             const shortsViewer = document.getElementById('shortsViewer');
-            if (!shortsViewer || shortsViewer.style.display === 'none' || currentShortIndex === null) return;
+            if (!shortsViewer || !shortsViewer.classList.contains('active') || currentShortIndex === null) return;
             
             if (e.key === 'ArrowUp') {
                 e.preventDefault();
@@ -3016,6 +3680,11 @@
         window.addEventListener('firebaseReady', async function() {
             // Intentar cargar cuenta del usuario
             await loadUserAccount();
+            
+            // Cargar suscripciones del usuario
+            if (currentUserId) {
+                loadUserSubscriptions();
+            }
             
             // Cargar videos
             loadVideos();
@@ -3057,7 +3726,21 @@
             document.getElementById('homeContainer').style.display = 'none';
             document.getElementById('shortsContainer').classList.remove('active');
             document.getElementById('watchPage').classList.remove('active');
+            document.getElementById('subscriptionsPage').classList.remove('active');
             document.getElementById('channelPage').classList.add('active');
+            
+            // Establecer canal actual y actualizar botón de suscripción
+            currentChannelId = userId || username;
+            const channelSubscribeBtn = document.getElementById('channelSubscribeBtn');
+            if (channelSubscribeBtn) {
+                if (userSubscriptions[currentChannelId]) {
+                    channelSubscribeBtn.classList.add('subscribed');
+                    channelSubscribeBtn.querySelector('span').textContent = 'Suscrito';
+                } else {
+                    channelSubscribeBtn.classList.remove('subscribed');
+                    channelSubscribeBtn.querySelector('span').textContent = 'Suscribirse';
+                }
+            }
             
             // Configurar información del canal
             document.getElementById('channelTitle').textContent = username || 'Usuario Anónimo';
@@ -3087,8 +3770,10 @@
                 return false;
             });
             
-            // Actualizar estadísticas
-            document.getElementById('channelStats').textContent = `${userVideos.length} videos • ${userShorts.length} shorts`;
+            // Actualizar estadísticas con suscriptores
+            getChannelSubscribers(currentChannelId).then(count => {
+                document.getElementById('channelStats').textContent = `${count} suscriptor${count !== 1 ? 'es' : ''} • ${userVideos.length} videos • ${userShorts.length} shorts`;
+            });
             
             // Renderizar videos del canal
             renderChannelVideos(userVideos, username, userId);
