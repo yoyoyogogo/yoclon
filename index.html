@@ -279,6 +279,7 @@
             font-weight: 500;
         }
 
+
         .video-info {
             padding: 12px 0;
         }
@@ -526,6 +527,29 @@
         .action-btn.active {
             background-color: #3ea6ff;
         }
+        
+        /* Ocultar texto de botones cuando sidebar está abierta */
+        .watch-page:not(.sidebar-closed) .action-btn span {
+            display: none;
+        }
+        
+        .watch-page:not(.sidebar-closed) .action-btn {
+            padding: 10px 12px;
+            min-width: 44px;
+            justify-content: center;
+        }
+        
+        /* Hacer botón de suscribirse más compacto cuando sidebar está abierta */
+        .watch-page:not(.sidebar-closed) .subscribe-btn {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        
+        /* Ajustar acciones del video para que no se desborden */
+        .watch-page:not(.sidebar-closed) .video-actions {
+            flex-wrap: wrap;
+        }
+
 
         .video-details-metadata {
             font-size: 14px;
@@ -1856,6 +1880,102 @@
             }
         }
         
+        /* Barra de navegación inferior para móvil */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #212121;
+            border-top: 1px solid #303030;
+            padding: 8px 0;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+        
+        .mobile-nav-items {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .mobile-nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            color: #aaa;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.2s;
+            background: none;
+            border: none;
+            font-size: 10px;
+            font-weight: 500;
+        }
+        
+        .mobile-nav-item.active {
+            color: #fff;
+        }
+        
+        .mobile-nav-item svg {
+            width: 24px;
+            height: 24px;
+            fill: currentColor;
+        }
+        
+        .mobile-nav-item.upload-item {
+            background: #ff0000;
+            color: #fff;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            padding: 0;
+            margin-top: -28px;
+            box-shadow: 0 4px 12px rgba(255,0,0,0.4);
+        }
+        
+        .mobile-nav-item.upload-item svg {
+            width: 28px;
+            height: 28px;
+        }
+        
+        .mobile-nav-item.upload-item span {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            /* Mostrar barra inferior en móvil */
+            .mobile-bottom-nav {
+                display: block;
+            }
+            
+            /* Ocultar sidebar en móvil */
+            .sidebar {
+                display: none !important;
+            }
+            
+            /* Ajustar padding del body para la barra inferior */
+            body {
+                padding-bottom: 70px;
+            }
+            
+            /* Ocultar botón de menú y shorts del header en móvil */
+            .header-left .menu-btn,
+            .header-left .shorts-btn {
+                display: none;
+            }
+            
+            /* Ocultar botón de subir del header en móvil */
+            .header-right .upload-btn {
+                display: none;
+            }
+        }
+        
         @media (max-width: 480px) {
             .header-left .logo span {
                 display: none;
@@ -1930,6 +2050,12 @@
             </svg>
             <span>Suscripciones</span>
         </div>
+        <div class="sidebar-item" onclick="goToSaved()">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+            </svg>
+            <span>Guardados</span>
+        </div>
     </div>
 
     <div class="container sidebar-closed" id="homeContainer">
@@ -1989,7 +2115,13 @@
                             <svg viewBox="0 0 24 24">
                                 <path d="M18 8a3 3 0 100-6 3 3 0 000 6zM6 15a3 3 0 100-6 3 3 0 000 6zM18 22a3 3 0 100-6 3 3 0 000 6zM8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
-                            Compartir
+                            <span>Compartir</span>
+                        </button>
+                        <button class="action-btn" id="saveVideoBtn" onclick="toggleSaveVideo()">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <span>Guardar</span>
                         </button>
                     </div>
                 </div>
@@ -2191,6 +2323,12 @@
                 </svg>
                 <span>Compartir</span>
             </button>
+            <button class="shorts-action-btn" id="saveShortBtn" onclick="toggleSaveShort()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                </svg>
+                <span>Guardar</span>
+            </button>
         </div>
     </div>
 
@@ -2253,6 +2391,7 @@
         let currentChannelId = null;
         let isShortsFeedMode = false; // Para saber si viene del feed de la sidebar
         let shuffledShorts = []; // Array de shorts mezclados para el feed
+        let userSavedContent = {}; // Contenido guardado por el usuario
         
         // Cargar cuenta del usuario desde Firebase
         async function loadUserAccount() {
@@ -2264,9 +2403,13 @@
             
             if (snapshot.exists()) {
                 const userData = snapshot.val();
-                currentUser = userData.username;
+                currentUser = {
+                    id: userId,
+                    username: userData.username
+                };
                 currentUserId = userId;
                 userLikes = userData.likes || {};
+                userSavedContent = userData.savedContent || {};
                 return userData;
             }
             return null;
@@ -2304,8 +2447,12 @@
             // Guardar ID en sessionStorage
             sessionStorage.setItem('mitube_user_id', userId);
             currentUserId = userId;
-            currentUser = username;
+            currentUser = {
+                id: userId,
+                username: username
+            };
             userLikes = {};
+            userSavedContent = {};
             
             return userId;
         }
@@ -2314,8 +2461,12 @@
         async function loginUserAccount(userId, userData) {
             sessionStorage.setItem('mitube_user_id', userId);
             currentUserId = userId;
-            currentUser = userData.username;
+            currentUser = {
+                id: userId,
+                username: userData.username
+            };
             userLikes = userData.likes || {};
+            userSavedContent = userData.savedContent || {};
         }
         
         // Guardar likes del usuario en Firebase
@@ -2323,6 +2474,13 @@
             if (!currentUserId) return;
             const userLikesRef = window.dbRef(window.database, `cuentas/${currentUserId}/likes`);
             await window.dbSet(userLikesRef, userLikes);
+        }
+        
+        // Guardar contenido guardado del usuario en Firebase
+        async function saveUserSavedContent() {
+            if (!currentUserId) return;
+            const userSavedRef = window.dbRef(window.database, `cuentas/${currentUserId}/savedContent`);
+            await window.dbSet(userSavedRef, userSavedContent);
         }
         
         // Cargar videos y shorts desde Firebase
@@ -2438,6 +2596,18 @@
             return views.toString();
         }
 
+        function formatDuration(seconds) {
+            if (!seconds || seconds === 0) return '0:00';
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            }
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+
         function getYouTubeID(url) {
             const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
             const match = url.match(regExp);
@@ -2523,6 +2693,8 @@
             
             // Actualizar sidebar
             updateSidebarActive('inicio');
+            // Actualizar navegación móvil
+            updateMobileNav('inicio');
         }
 
         function updateSidebarActive(page) {
@@ -2567,6 +2739,7 @@
             document.getElementById('subscriptionsPage').classList.add('active');
             
             updateSidebarActive('suscripciones');
+            updateMobileNav('suscripciones');
             renderSubscriptions();
         }
 
@@ -2904,6 +3077,172 @@
                 return 0;
             }
         }
+
+        // Botones de guardar
+        async function toggleSaveVideo() {
+            if (!currentUser) {
+                showUsernameModal();
+                return;
+            }
+            
+            if (!videos[currentVideoIndex]) return;
+            const video = videos[currentVideoIndex];
+            const saveBtn = document.getElementById('saveVideoBtn');
+            
+            if (userSavedContent[video.id]) {
+                // Quitar de guardados
+                delete userSavedContent[video.id];
+                saveBtn.classList.remove('active');
+                saveBtn.querySelector('svg').innerHTML = '<path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+            } else {
+                // Agregar a guardados
+                userSavedContent[video.id] = {
+                    type: 'video',
+                    timestamp: Date.now()
+                };
+                saveBtn.classList.add('active');
+                saveBtn.querySelector('svg').innerHTML = '<path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="currentColor"/>';
+            }
+            
+            await saveUserSavedContent();
+        }
+
+        async function toggleSaveShort() {
+            if (!currentUser) {
+                showUsernameModal();
+                return;
+            }
+            
+            if (currentShortIndex === null) return;
+            const short = isShortsFeedMode ? shuffledShorts[currentShortIndex] : shorts[currentShortIndex];
+            const saveBtn = document.getElementById('saveShortBtn');
+            
+            if (userSavedContent[short.id]) {
+                // Quitar de guardados
+                delete userSavedContent[short.id];
+                saveBtn.classList.remove('active');
+            } else {
+                // Agregar a guardados
+                userSavedContent[short.id] = {
+                    type: 'short',
+                    timestamp: Date.now()
+                };
+                saveBtn.classList.add('active');
+            }
+            
+            await saveUserSavedContent();
+        }
+
+        function goToSaved() {
+            if (!currentUser) {
+                showUsernameModal();
+                return;
+            }
+            
+            // Detener el video limpiando el reproductor
+            document.getElementById('mainVideoPlayer').innerHTML = '';
+            
+            document.getElementById('homeContainer').style.display = 'none';
+            document.getElementById('shortsContainer').classList.remove('active');
+            document.getElementById('watchPage').classList.remove('active');
+            document.getElementById('channelPage').classList.remove('active');
+            document.getElementById('subscriptionsPage').classList.remove('active');
+            
+            // Actualizar navegación móvil
+            updateMobileNav('guardados');
+            
+            // Mostrar página de guardados (usaremos la página de suscripciones modificada)
+            renderSavedContent();
+        }
+        
+        function renderSavedContent() {
+            const page = document.getElementById('subscriptionsPage');
+            page.classList.add('active');
+            
+            const title = document.querySelector('.subscriptions-title');
+            title.textContent = 'Contenido guardado';
+            
+            const grid = document.getElementById('subscriptionsGrid');
+            const emptyState = document.getElementById('subscriptionsEmptyState');
+            
+            // Obtener IDs de contenido guardado
+            const savedIds = Object.keys(userSavedContent);
+            
+            if (savedIds.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h2').textContent = 'No tienes contenido guardado';
+                emptyState.querySelector('p').textContent = 'Guarda videos y shorts para verlos más tarde';
+                return;
+            }
+            
+            // Obtener contenido guardado
+            const savedContent = [];
+            savedIds.forEach(id => {
+                const video = videos.find(v => v.id === id);
+                if (video) {
+                    savedContent.push({ ...video, savedTimestamp: userSavedContent[id].timestamp });
+                } else {
+                    const short = shorts.find(s => s.id === id);
+                    if (short) {
+                        savedContent.push({ ...short, savedTimestamp: userSavedContent[id].timestamp, isShort: true });
+                    }
+                }
+            });
+            
+            // Ordenar por fecha de guardado (más reciente primero)
+            savedContent.sort((a, b) => b.savedTimestamp - a.savedTimestamp);
+            
+            if (savedContent.length === 0) {
+                grid.style.display = 'none';
+                emptyState.style.display = 'block';
+                emptyState.querySelector('h2').textContent = 'No se encontró contenido';
+                emptyState.querySelector('p').textContent = 'El contenido guardado puede haber sido eliminado';
+                return;
+            }
+            
+            grid.style.display = 'grid';
+            emptyState.style.display = 'none';
+            
+            grid.innerHTML = savedContent.map(content => {
+                const isDirectVid = isDirectVideo(content.url);
+                const thumbnailHTML = isDirectVid 
+                    ? `<video muted preload="metadata"><source src="${content.url}#t=0.5"></video>`
+                    : `<img src="${content.thumbnail}" alt="${content.title}">`;
+                
+                const uploaderAvatar = content.uploaderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(content.uploadedBy || 'U') + '&background=3ea6ff&color=fff&size=128';
+                
+                const index = content.isShort 
+                    ? shorts.findIndex(s => s.id === content.id)
+                    : videos.findIndex(v => v.id === content.id);
+                
+                const clickAction = content.isShort 
+                    ? `watchShort(${index})`
+                    : `watchVideo(${index})`;
+                
+                return `
+                    <div class="video-card">
+                        <div class="video-thumbnail" onclick="${clickAction}">
+                            ${thumbnailHTML}
+                            ${content.isShort ? '<div class="video-duration" style="background: rgba(255,0,0,0.9);">Short</div>' : ''}
+                        </div>
+                        <div class="video-info">
+                            <div class="video-channel-info">
+                                <img src="${uploaderAvatar}" alt="${content.uploadedBy || 'Usuario'}" class="channel-avatar" onclick="goToChannel('${content.discordUserId || ''}', '${content.uploadedBy || 'Usuario Anónimo'}', '${uploaderAvatar}')">
+                                <div class="video-text-info">
+                                    <div class="video-title" onclick="${clickAction}">${content.title}</div>
+                                    <div class="video-channel-name" onclick="goToChannel('${content.discordUserId || ''}', '${content.uploadedBy || 'Usuario Anónimo'}', '${uploaderAvatar}')">${content.uploadedBy || 'Usuario Anónimo'}</div>
+                                    <div class="video-metadata">
+                                        <span>${formatViews(content.views || 0)} vistas</span>
+                                        <span>${getRelativeTime(content.timestamp)}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
         
         function watchVideo(index) {
             currentVideoIndex = index;
@@ -2958,6 +3297,19 @@
             document.getElementById('likeBtn').classList.toggle('active', userLikeState === 'like');
             document.getElementById('dislikeBtn').classList.toggle('active', userLikeState === 'dislike');
             document.getElementById('likeCount').textContent = formatViews(video.likes || 0);
+            
+            // Actualizar estado del botón de guardar
+            const saveVideoBtn = document.getElementById('saveVideoBtn');
+            if (saveVideoBtn) {
+                if (userSavedContent[video.id]) {
+                    saveVideoBtn.classList.add('active');
+                    saveVideoBtn.querySelector('svg').innerHTML = '<path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" fill="currentColor"/>';
+                } else {
+                    saveVideoBtn.classList.remove('active');
+                    saveVideoBtn.querySelector('svg').innerHTML = '<path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+                }
+            }
+            
             
             const embedUrl = getVideoEmbedUrl(video.url);
             const playerElement = document.getElementById('mainVideoPlayer');
@@ -3031,7 +3383,7 @@
             const newCommentRef = window.dbPush(commentsRef);
             
             await window.dbSet(newCommentRef, {
-                author: currentUser,
+                author: currentUser.username,
                 text: text,
                 timestamp: Date.now()
             });
@@ -3151,6 +3503,8 @@
             
             // Actualizar sidebar
             updateSidebarActive('shorts');
+            // Actualizar navegación móvil
+            updateMobileNav('shorts');
             
             // Marcar que estamos en modo feed
             isShortsFeedMode = true;
@@ -3245,6 +3599,16 @@
             document.getElementById('shortsLikeBtn').classList.toggle('active', userLikeState === 'like');
             document.getElementById('shortsLikeCount').textContent = formatViews(short.likes || 0);
             
+            // Actualizar estado del botón de guardar
+            const saveShortBtn = document.getElementById('saveShortBtn');
+            if (saveShortBtn) {
+                if (userSavedContent[short.id]) {
+                    saveShortBtn.classList.add('active');
+                } else {
+                    saveShortBtn.classList.remove('active');
+                }
+            }
+            
             // Actualizar navegación
             document.getElementById('shortsPrevBtn').disabled = index === 0;
             document.getElementById('shortsNextBtn').disabled = index === shorts.length - 1;
@@ -3288,6 +3652,16 @@
             const userLikeState = userLikes[short.id];
             document.getElementById('shortsLikeBtn').classList.toggle('active', userLikeState === 'like');
             document.getElementById('shortsLikeCount').textContent = formatViews(short.likes || 0);
+            
+            // Actualizar estado del botón de guardar
+            const saveShortBtn = document.getElementById('saveShortBtn');
+            if (saveShortBtn) {
+                if (userSavedContent[short.id]) {
+                    saveShortBtn.classList.add('saved');
+                } else {
+                    saveShortBtn.classList.remove('saved');
+                }
+            }
             
             // Actualizar navegación
             document.getElementById('shortsPrevBtn').disabled = feedIndex === 0;
@@ -3353,7 +3727,7 @@
             const newCommentRef = window.dbPush(commentsRef);
             
             await window.dbSet(newCommentRef, {
-                author: currentUser,
+                author: currentUser.username,
                 text: text,
                 timestamp: Date.now()
             });
@@ -3855,6 +4229,63 @@
                 document.getElementById('channelShortsGrid').style.display = 'grid';
             }
         }
+        
+        // Actualizar navegación móvil activa
+        function updateMobileNav(page) {
+            const navItems = document.querySelectorAll('.mobile-nav-item');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            if (page === 'inicio') {
+                document.getElementById('mobileNavHome')?.classList.add('active');
+            } else if (page === 'shorts') {
+                document.getElementById('mobileNavShorts')?.classList.add('active');
+            } else if (page === 'suscripciones') {
+                document.getElementById('mobileNavSubs')?.classList.add('active');
+            } else if (page === 'guardados') {
+                document.getElementById('mobileNavSaved')?.classList.add('active');
+            }
+        }
     </script>
+    
+    <!-- Barra de navegación inferior móvil -->
+    <div class="mobile-bottom-nav">
+        <div class="mobile-nav-items">
+            <button class="mobile-nav-item active" id="mobileNavHome" onclick="goHome(); updateMobileNav('inicio');">
+                <svg viewBox="0 0 24 24">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+                </svg>
+                <span>Inicio</span>
+            </button>
+            
+            <button class="mobile-nav-item" id="mobileNavShorts" onclick="goToShortsFeed(); updateMobileNav('shorts');">
+                <svg viewBox="0 0 24 24">
+                    <path d="M10 20H14V4H10V20ZM4 20H8V10H4V20ZM16 9V20H20V9H16Z"/>
+                </svg>
+                <span>Shorts</span>
+            </button>
+            
+            <button class="mobile-nav-item upload-item" onclick="openUploadModal()">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4v16m8-8H4" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            </button>
+            
+            <button class="mobile-nav-item" id="mobileNavSubs" onclick="goToSubscriptions(); updateMobileNav('suscripciones');">
+                <svg viewBox="0 0 24 24">
+                    <path d="M20 7H4V6h16v1zm2 2v12H2V9h20zm-7 6l-5-3v6l5-3zm2-12H7v1h10V3z"/>
+                </svg>
+                <span>Suscripciones</span>
+            </button>
+            
+            <button class="mobile-nav-item" id="mobileNavSaved" onclick="goToSaved(); updateMobileNav('guardados');">
+                <svg viewBox="0 0 24 24">
+                    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                </svg>
+                <span>Guardados</span>
+            </button>
+        </div>
+    </div>
 </body>
 </html>
