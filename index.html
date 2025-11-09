@@ -1053,6 +1053,25 @@
             height: 100%;
             object-fit: cover;
         }
+
+        /* Ocultar controles del video excepto la barra de progreso */
+        .shorts-video-container video::-webkit-media-controls-panel {
+            display: flex !important;
+            opacity: 1 !important;
+        }
+
+        .shorts-video-container video::-webkit-media-controls-play-button,
+        .shorts-video-container video::-webkit-media-controls-mute-button,
+        .shorts-video-container video::-webkit-media-controls-volume-slider,
+        .shorts-video-container video::-webkit-media-controls-fullscreen-button,
+        .shorts-video-container video::-webkit-media-controls-current-time-display,
+        .shorts-video-container video::-webkit-media-controls-time-remaining-display {
+            display: none !important;
+        }
+
+        .shorts-video-container video::-webkit-media-controls-timeline {
+            display: flex !important;
+        }
         
         .shorts-video-container iframe {
             width: 100%;
@@ -1084,11 +1103,38 @@
 
         .shorts-info {
             position: absolute;
-            bottom: 60px;
+            bottom: 20px;
             left: 12px;
-            right: 12px;
+            right: 80px;
             color: #fff;
             z-index: 10;
+        }
+
+        .shorts-info-uploader {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .shorts-uploader-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #333;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .shorts-uploader-avatar:hover {
+            opacity: 0.8;
+        }
+
+        .shorts-uploader-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
         }
 
         .shorts-info-title {
@@ -2259,6 +2305,10 @@
         <div class="shorts-viewer-content">
             <div class="shorts-video-container" id="shortsVideoContainer"></div>
             <div class="shorts-info">
+                <div class="shorts-info-uploader">
+                    <img class="shorts-uploader-avatar" id="shortsUploaderAvatar" src="" alt="">
+                    <span class="shorts-uploader-name" id="shortsUploaderName"></span>
+                </div>
                 <div class="shorts-info-title" id="shortsInfoTitle"></div>
                 <div class="shorts-info-meta" id="shortsInfoMeta"></div>
             </div>
@@ -2502,43 +2552,131 @@
             return false;
         }
 
-        function loadVideos() {
+        async function loadVideos() {
+            // Cargar videos una sola vez (sin sincronización en tiempo real)
             const videosRef = window.dbRef(window.database, 'videos');
-            window.dbOnValue(videosRef, async (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    videos = Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    })).sort((a, b) => b.timestamp - a.timestamp);
-                    
-                    // Sincronizar datos de usuarios de Discord
-                    for (let video of videos) {
-                        await syncDiscordUserData(video);
-                    }
-                } else {
-                    videos = [];
+            const videosSnapshot = await window.dbGet(videosRef);
+            const data = videosSnapshot.val();
+            
+            if (data) {
+                videos = Object.keys(data).map(key => ({
+                    id: key,
+                    ...data[key]
+                })).sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Sincronizar datos de usuarios de Discord
+                for (let video of videos) {
+                    await syncDiscordUserData(video);
                 }
-                renderVideos();
+            } else {
+                videos = [];
+            }
+            renderVideos();
+            
+            // Escuchar cambios en videos (agregar y eliminar)
+            let isInitialLoad = true;
+            window.dbOnValue(videosRef, async (snapshot) => {
+                if (isInitialLoad) {
+                    isInitialLoad = false;
+                    return; // Ignorar la carga inicial
+                }
+                
+                // Solo se ejecuta cuando hay cambios después de la carga inicial
+                const newData = snapshot.val();
+                const newVideoIds = newData ? Object.keys(newData) : [];
+                const currentVideoIds = videos.map(v => v.id);
+                
+                // Detectar videos nuevos
+                const addedIds = newVideoIds.filter(id => !currentVideoIds.includes(id));
+                
+                // Detectar videos eliminados
+                const deletedIds = currentVideoIds.filter(id => !newVideoIds.includes(id));
+                
+                let hasChanges = false;
+                
+                // Agregar nuevos videos
+                if (addedIds.length > 0) {
+                    for (let id of addedIds) {
+                        const newVideo = { id, ...newData[id] };
+                        await syncDiscordUserData(newVideo);
+                        videos.unshift(newVideo);
+                    }
+                    hasChanges = true;
+                }
+                
+                // Eliminar videos borrados
+                if (deletedIds.length > 0) {
+                    videos = videos.filter(v => !deletedIds.includes(v.id));
+                    hasChanges = true;
+                }
+                
+                if (hasChanges) {
+                    videos.sort((a, b) => b.timestamp - a.timestamp);
+                    renderVideos();
+                }
             });
             
+            // Cargar shorts una sola vez (sin sincronización en tiempo real)
             const shortsRef = window.dbRef(window.database, 'shorts');
-            window.dbOnValue(shortsRef, async (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    shorts = Object.keys(data).map(key => ({
-                        id: key,
-                        ...data[key]
-                    })).sort((a, b) => b.timestamp - a.timestamp);
-                    
-                    // Sincronizar datos de usuarios de Discord
-                    for (let short of shorts) {
-                        await syncDiscordUserData(short);
-                    }
-                } else {
-                    shorts = [];
+            const shortsSnapshot = await window.dbGet(shortsRef);
+            const shortsData = shortsSnapshot.val();
+            
+            if (shortsData) {
+                shorts = Object.keys(shortsData).map(key => ({
+                    id: key,
+                    ...shortsData[key]
+                })).sort((a, b) => b.timestamp - a.timestamp);
+                
+                // Sincronizar datos de usuarios de Discord
+                for (let short of shorts) {
+                    await syncDiscordUserData(short);
                 }
-                renderShorts();
+            } else {
+                shorts = [];
+            }
+            renderShorts();
+            
+            // Escuchar cambios en shorts (agregar y eliminar)
+            let isInitialLoadShorts = true;
+            window.dbOnValue(shortsRef, async (snapshot) => {
+                if (isInitialLoadShorts) {
+                    isInitialLoadShorts = false;
+                    return; // Ignorar la carga inicial
+                }
+                
+                // Solo se ejecuta cuando hay cambios después de la carga inicial
+                const newData = snapshot.val();
+                const newShortIds = newData ? Object.keys(newData) : [];
+                const currentShortIds = shorts.map(s => s.id);
+                
+                // Detectar shorts nuevos
+                const addedIds = newShortIds.filter(id => !currentShortIds.includes(id));
+                
+                // Detectar shorts eliminados
+                const deletedIds = currentShortIds.filter(id => !newShortIds.includes(id));
+                
+                let hasChanges = false;
+                
+                // Agregar nuevos shorts
+                if (addedIds.length > 0) {
+                    for (let id of addedIds) {
+                        const newShort = { id, ...newData[id] };
+                        await syncDiscordUserData(newShort);
+                        shorts.unshift(newShort);
+                    }
+                    hasChanges = true;
+                }
+                
+                // Eliminar shorts borrados
+                if (deletedIds.length > 0) {
+                    shorts = shorts.filter(s => !deletedIds.includes(s.id));
+                    hasChanges = true;
+                }
+                
+                if (hasChanges) {
+                    shorts.sort((a, b) => b.timestamp - a.timestamp);
+                    renderShorts();
+                }
             });
         }
         
@@ -2675,6 +2813,7 @@
         }
 
         function isDirectVideo(url) {
+            if (!url) return false;
             return url.match(/\.(mp4|webm|ogg)($|\?)/i) || url.includes('.mp4?') || url.includes('.webm?') || url.includes('.ogg?');
         }
 
@@ -3180,11 +3319,11 @@
             const savedContent = [];
             savedIds.forEach(id => {
                 const video = videos.find(v => v.id === id);
-                if (video) {
+                if (video && video.url) {
                     savedContent.push({ ...video, savedTimestamp: userSavedContent[id].timestamp });
                 } else {
                     const short = shorts.find(s => s.id === id);
-                    if (short) {
+                    if (short && short.url) {
                         savedContent.push({ ...short, savedTimestamp: userSavedContent[id].timestamp, isShort: true });
                     }
                 }
@@ -3393,7 +3532,7 @@
 
         function renderRelatedVideos(currentIndex) {
             const container = document.getElementById('relatedVideos');
-            const relatedVideos = videos.filter((v, i) => i !== currentIndex);
+            const relatedVideos = videos.filter((v, i) => i !== currentIndex && v && v.url);
             
             if (relatedVideos.length === 0) {
                 container.innerHTML = '<p style="color: #aaa; font-size: 14px;">No hay más videos</p>';
@@ -3427,7 +3566,10 @@
             const emptyState = document.getElementById('emptyState');
             const displayVideos = filteredVideos.length > 0 ? filteredVideos : videos;
             
-            if (displayVideos.length === 0) {
+            // Filtrar videos que no tienen URL válida
+            const validVideos = displayVideos.filter(video => video && video.url);
+            
+            if (validVideos.length === 0) {
                 grid.style.display = 'none';
                 emptyState.style.display = 'block';
                 emptyState.querySelector('h2').textContent = filteredVideos.length === 0 && videos.length > 0 ? 'No se encontraron resultados' : 'No hay videos aún';
@@ -3438,7 +3580,7 @@
             grid.style.display = 'grid';
             emptyState.style.display = 'none';
             
-            grid.innerHTML = displayVideos.map((video, index) => {
+            grid.innerHTML = validVideos.map((video, index) => {
                 const isDirectVid = isDirectVideo(video.url);
                 const thumbnailHTML = isDirectVid 
                     ? `<video muted preload="metadata"><source src="${video.url}#t=0.5"></video>`
@@ -3527,7 +3669,10 @@
             const grid = document.getElementById('shortsGrid');
             const emptyState = document.getElementById('shortsEmptyState');
             
-            if (shorts.length === 0) {
+            // Filtrar shorts que no tienen URL válida
+            const validShorts = shorts.filter(short => short && short.url);
+            
+            if (validShorts.length === 0) {
                 grid.style.display = 'none';
                 emptyState.style.display = 'block';
                 return;
@@ -3536,7 +3681,7 @@
             grid.style.display = 'grid';
             emptyState.style.display = 'none';
             
-            grid.innerHTML = shorts.map((short, index) => {
+            grid.innerHTML = validShorts.map((short, index) => {
                 const isDirectVid = isDirectVideo(short.url);
                 const thumbnailHTML = isDirectVid 
                     ? `<video muted preload="metadata" playsinline><source src="${short.url}#t=0.5"></video>`
@@ -3577,8 +3722,17 @@
             }
             
             document.getElementById('shortsViewer').classList.add('active');
+            const avatarElement = document.getElementById('shortsUploaderAvatar');
+            avatarElement.src = short.uploaderAvatar || 'https://via.placeholder.com/32';
+            avatarElement.onclick = () => {
+                if (short.discordUserId || short.uploadedBy) {
+                    closeShortsViewer();
+                    goToChannel(short.discordUserId, short.uploadedBy, short.uploaderAvatar);
+                }
+            };
+            document.getElementById('shortsUploaderName').textContent = short.uploadedBy || 'Usuario';
             document.getElementById('shortsInfoTitle').textContent = short.title;
-            document.getElementById('shortsInfoMeta').textContent = `${formatViews(short.views)} vistas • ${getRelativeTime(short.timestamp)}`;
+            document.getElementById('shortsInfoMeta').textContent = '';
             
             const embedUrl = getVideoEmbedUrl(short.url);
             const container = document.getElementById('shortsVideoContainer');
@@ -3631,8 +3785,17 @@
             }
             
             document.getElementById('shortsViewer').classList.add('active');
+            const avatarElement = document.getElementById('shortsUploaderAvatar');
+            avatarElement.src = short.uploaderAvatar || 'https://via.placeholder.com/32';
+            avatarElement.onclick = () => {
+                if (short.discordUserId || short.uploadedBy) {
+                    closeShortsViewer();
+                    goToChannel(short.discordUserId, short.uploadedBy, short.uploaderAvatar);
+                }
+            };
+            document.getElementById('shortsUploaderName').textContent = short.uploadedBy || 'Usuario';
             document.getElementById('shortsInfoTitle').textContent = short.title;
-            document.getElementById('shortsInfoMeta').textContent = `${formatViews(short.views)} vistas • ${getRelativeTime(short.timestamp)}`;
+            document.getElementById('shortsInfoMeta').textContent = '';
             
             const embedUrl = getVideoEmbedUrl(short.url);
             const container = document.getElementById('shortsVideoContainer');
@@ -3673,15 +3836,22 @@
         
         // Funciones de comentarios para Shorts
         async function loadShortComments(shortId) {
+            // Resetear contador inmediatamente al cambiar de short
+            const commentsList = document.getElementById('shortCommentsList');
+            commentsList.innerHTML = '<div class="no-comments">Cargando comentarios...</div>';
+            document.getElementById('shortsCommentsCount').textContent = 'Comentarios';
+            document.getElementById('shortsCommentsCountBtn').textContent = '0';
+            document.getElementById('shortsCommentsTitle').textContent = '0 Comentarios';
+            
             const commentsRef = window.dbRef(window.database, `comments/shorts/${shortId}`);
             window.dbOnValue(commentsRef, (snapshot) => {
                 const data = snapshot.val();
-                const commentsList = document.getElementById('shortCommentsList');
                 
                 if (!data) {
                     commentsList.innerHTML = '<div class="no-comments">No hay comentarios aún</div>';
                     document.getElementById('shortsCommentsCount').textContent = 'Comentarios';
                     document.getElementById('shortsCommentsCountBtn').textContent = '0';
+                    document.getElementById('shortsCommentsTitle').textContent = '0 Comentarios';
                     return;
                 }
                 
@@ -3964,7 +4134,7 @@
             const contentType = document.querySelector('input[name="contentType"]:checked').value;
             
             // Generar avatar para el usuario web
-            const uploaderName = currentUser || 'Usuario Anónimo';
+            const uploaderName = currentUser ? currentUser.username : 'Usuario Anónimo';
             const uploaderAvatar = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(uploaderName) + '&background=3ea6ff&color=fff&size=128';
             
             const newContent = {
@@ -4132,13 +4302,15 @@
             const colorIndex = (username || 'U').charCodeAt(0) % bannerColors.length;
             document.getElementById('channelBanner').style.background = bannerColors[colorIndex];
             
-            // Filtrar videos y shorts del usuario
+            // Filtrar videos y shorts del usuario (solo los que tienen URL válida)
             const userVideos = videos.filter(v => {
+                if (!v || !v.url) return false;
                 if (userId && v.discordUserId === userId) return true;
                 if (v.uploadedBy === username) return true;
                 return false;
             });
             const userShorts = shorts.filter(s => {
+                if (!s || !s.url) return false;
                 if (userId && s.discordUserId === userId) return true;
                 if (s.uploadedBy === username) return true;
                 return false;
