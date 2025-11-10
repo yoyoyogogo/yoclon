@@ -4,6 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MiTube - Comparte tus Videos</title>
+    
+    <!-- Meta Tags para Discord Embed -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://yoyoyogogo.github.io/yoclon/">
+    <meta property="og:title" content="MiTube - Comparte tus Videos">
+    <meta property="og:description" content="🎥 Plataforma para compartir videos y shorts | Sube contenido, conecta con creadores y descubre videos increíbles">
+    <meta property="og:image" content="https://media.discordapp.net/attachments/783812369963810846/1437465112293408778/logo-transparente.png?ex=69135735&is=691205b5&hm=8215042f095f92e86c05b2d06cbd642a4122441e8972f0b31aaca15fe7d6ab52&=&format=webp&quality=lossless&width=1202&height=631">
+    <meta property="og:site_name" content="MiTube">
+    
+    <!-- Discord Embed Color (Rojo YouTube) -->
+    <meta name="theme-color" content="#FF0000">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎥</text></svg>">
+    
     <style>
         * {
             margin: 0;
@@ -260,6 +275,37 @@
             height: 100%;
             object-fit: cover;
             transition: transform 0.2s;
+        }
+
+        .video-thumbnail .thumbnail-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.3s;
+            z-index: 1;
+        }
+
+        .video-thumbnail .preview-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 2;
+        }
+
+        .video-card:hover .video-thumbnail .thumbnail-image {
+            opacity: 0;
+        }
+
+        .video-card:hover .video-thumbnail .preview-video {
+            opacity: 1;
         }
 
         .video-card:hover .video-thumbnail img,
@@ -1039,6 +1085,24 @@
             border-radius: 12px;
             overflow: hidden;
             margin-top: 60px;
+        }
+
+        /* Adaptación para videos horizontales (16:9 o similar) */
+        .shorts-viewer-content.horizontal {
+            width: 720px;
+            height: 520px;
+        }
+
+        /* Adaptación para videos cuadrados (1:1) */
+        .shorts-viewer-content.square {
+            width: 520px;
+            height: 520px;
+        }
+
+        /* Mantener vertical para videos 9:16 */
+        .shorts-viewer-content.vertical {
+            width: 320px;
+            height: 520px;
         }
 
         .shorts-video-container {
@@ -3344,10 +3408,11 @@
             emptyState.style.display = 'none';
             
             grid.innerHTML = savedContent.map(content => {
-                const isDirectVid = isDirectVideo(content.url);
-                const thumbnailHTML = isDirectVid 
-                    ? `<video muted preload="metadata"><source src="${content.url}#t=0.5"></video>`
-                    : `<img src="${content.thumbnail}" alt="${content.title}">`;
+                const isYouTube = content.url.includes('youtube.com') || content.url.includes('youtu.be');
+                const thumbnailHTML = isYouTube
+                    ? `<img src="${content.thumbnail}" alt="${content.title}">`
+                    : `<img src="${content.thumbnail}" alt="${content.title}" class="thumbnail-image">
+                       <video class="preview-video" muted loop preload="none" data-video-url="${content.url}"></video>`;
                 
                 const uploaderAvatar = content.uploaderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(content.uploadedBy || 'U') + '&background=3ea6ff&color=fff&size=128';
                 
@@ -3360,7 +3425,7 @@
                     : `watchVideo(${index})`;
                 
                 return `
-                    <div class="video-card">
+                    <div class="video-card" data-video-index="${index}" data-is-short="${content.isShort}">
                         <div class="video-thumbnail" onclick="${clickAction}">
                             ${thumbnailHTML}
                             ${content.isShort ? '<div class="video-duration" style="background: rgba(255,0,0,0.9);">Short</div>' : ''}
@@ -3381,6 +3446,45 @@
                     </div>
                 `;
             }).join('');
+            
+            // Configurar preview de videos
+            setupVideoPreview();
+        }
+        
+        // Funcionalidad de preview al pasar el cursor
+        function setupVideoPreview() {
+            const videoCards = document.querySelectorAll('.video-card');
+            
+            videoCards.forEach(card => {
+                const previewVideo = card.querySelector('.preview-video');
+                if (!previewVideo) return;
+                
+                let hoverTimeout;
+                let isVideoLoaded = false;
+                
+                card.addEventListener('mouseenter', () => {
+                    // Esperar 500ms antes de cargar y reproducir el preview
+                    hoverTimeout = setTimeout(() => {
+                        if (!isVideoLoaded) {
+                            const videoUrl = previewVideo.getAttribute('data-video-url');
+                            if (videoUrl && !videoUrl.includes('youtube.com') && !videoUrl.includes('youtu.be')) {
+                                previewVideo.src = videoUrl;
+                                isVideoLoaded = true;
+                            }
+                        }
+                        
+                        previewVideo.play().catch(err => {
+                            console.log('Error al reproducir preview:', err);
+                        });
+                    }, 500);
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    clearTimeout(hoverTimeout);
+                    previewVideo.pause();
+                    previewVideo.currentTime = 0;
+                });
+            });
         }
         
         function watchVideo(index) {
@@ -3582,14 +3686,26 @@
             
             grid.innerHTML = validVideos.map((video, index) => {
                 const isDirectVid = isDirectVideo(video.url);
-                const thumbnailHTML = isDirectVid 
-                    ? `<video muted preload="metadata"><source src="${video.url}#t=0.5"></video>`
-                    : `<img src="${video.thumbnail}" alt="${video.title}">`;
+                const isYouTube = video.url.includes('youtube.com') || video.url.includes('youtu.be');
+                
+                let thumbnailHTML;
+                if (isYouTube) {
+                    // Solo thumbnail para YouTube, sin preview
+                    thumbnailHTML = `<img src="${video.thumbnail}" alt="${video.title}">`;
+                } else if (isDirectVid) {
+                    // Video directo con preview
+                    thumbnailHTML = `<video class="thumbnail-image" muted preload="metadata"><source src="${video.url}#t=0.5"></video>
+                       <video class="preview-video" muted loop preload="none" data-video-url="${video.url}"></video>`;
+                } else {
+                    // Thumbnail con preview
+                    thumbnailHTML = `<img src="${video.thumbnail}" alt="${video.title}" class="thumbnail-image">
+                       <video class="preview-video" muted loop preload="none" data-video-url="${video.url}"></video>`;
+                }
                 
                 const uploaderAvatar = video.uploaderAvatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(video.uploadedBy || 'U') + '&background=3ea6ff&color=fff&size=128';
                 
                 return `
-                    <div class="video-card">
+                    <div class="video-card" data-video-index="${index}">
                         <div class="video-thumbnail" onclick="watchVideo(${index})">
                             ${thumbnailHTML}
                         </div>
@@ -3609,6 +3725,9 @@
                     </div>
                 `;
             }).join('');
+            
+            // Configurar preview de videos
+            setupVideoPreview();
         }
 
         // Funciones para Shorts
@@ -3706,6 +3825,45 @@
             }).join('');
         }
         
+        // Función auxiliar para ajustar el contenedor según el aspect ratio del video
+        function adjustShortsViewerSize(videoUrl, embedUrl, container) {
+            if (isDirectVideo(videoUrl)) {
+                container.innerHTML = `
+                    <video controls autoplay loop id="currentShortVideo">
+                        <source src="${embedUrl}">
+                        Tu navegador no soporta la reproducción de video.
+                    </video>
+                `;
+                
+                // Detectar aspect ratio del video y ajustar contenedor
+                const videoElement = document.getElementById('currentShortVideo');
+                videoElement.addEventListener('loadedmetadata', function() {
+                    const aspectRatio = this.videoWidth / this.videoHeight;
+                    const viewerContent = document.querySelector('.shorts-viewer-content');
+                    
+                    // Remover clases previas
+                    viewerContent.classList.remove('horizontal', 'vertical', 'square');
+                    
+                    if (aspectRatio > 1.5) {
+                        // Video horizontal (16:9 o más ancho)
+                        viewerContent.classList.add('horizontal');
+                    } else if (aspectRatio > 0.8 && aspectRatio < 1.2) {
+                        // Video cuadrado (1:1 aproximadamente)
+                        viewerContent.classList.add('square');
+                    } else {
+                        // Video vertical (9:16 o similar)
+                        viewerContent.classList.add('vertical');
+                    }
+                });
+            } else {
+                container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
+                // Para iframes, mantener tamaño vertical por defecto
+                const viewerContent = document.querySelector('.shorts-viewer-content');
+                viewerContent.classList.remove('horizontal', 'square');
+                viewerContent.classList.add('vertical');
+            }
+        }
+        
         function watchShort(index, fromGrid = false) {
             currentShortIndex = index;
             const short = shorts[index];
@@ -3737,16 +3895,8 @@
             const embedUrl = getVideoEmbedUrl(short.url);
             const container = document.getElementById('shortsVideoContainer');
             
-            if (isDirectVideo(short.url)) {
-                container.innerHTML = `
-                    <video controls autoplay loop>
-                        <source src="${embedUrl}">
-                        Tu navegador no soporta la reproducción de video.
-                    </video>
-                `;
-            } else {
-                container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-            }
+            // Usar función auxiliar para ajustar el tamaño según aspect ratio
+            adjustShortsViewerSize(short.url, embedUrl, container);
             
             // Cargar estado de like del usuario desde localStorage
             const userLikeState = userLikes[short.id];
@@ -3800,16 +3950,8 @@
             const embedUrl = getVideoEmbedUrl(short.url);
             const container = document.getElementById('shortsVideoContainer');
             
-            if (isDirectVideo(short.url)) {
-                container.innerHTML = `
-                    <video controls autoplay loop>
-                        <source src="${embedUrl}">
-                        Tu navegador no soporta la reproducción de video.
-                    </video>
-                `;
-            } else {
-                container.innerHTML = `<iframe src="${embedUrl}" allowfullscreen></iframe>`;
-            }
+            // Usar función auxiliar para ajustar el tamaño según aspect ratio
+            adjustShortsViewerSize(short.url, embedUrl, container);
             
             // Cargar estado de like del usuario desde localStorage
             const userLikeState = userLikes[short.id];
@@ -4339,12 +4481,24 @@
             grid.innerHTML = userVideos.map((video) => {
                 const actualIndex = videos.findIndex(v => v.id === video.id);
                 const isDirectVid = isDirectVideo(video.url);
-                const thumbnailHTML = isDirectVid 
-                    ? `<video muted preload="metadata"><source src="${video.url}#t=0.5"></video>`
-                    : `<img src="${video.thumbnail}" alt="${video.title}">`;
+                const isYouTube = video.url.includes('youtube.com') || video.url.includes('youtu.be');
+                
+                let thumbnailHTML;
+                if (isYouTube) {
+                    // Solo thumbnail para YouTube, sin preview
+                    thumbnailHTML = `<img src="${video.thumbnail}" alt="${video.title}">`;
+                } else if (isDirectVid) {
+                    // Video directo con preview
+                    thumbnailHTML = `<video class="thumbnail-image" muted preload="metadata"><source src="${video.url}#t=0.5"></video>
+                       <video class="preview-video" muted loop preload="none" data-video-url="${video.url}"></video>`;
+                } else {
+                    // Thumbnail con preview
+                    thumbnailHTML = `<img src="${video.thumbnail}" alt="${video.title}" class="thumbnail-image">
+                       <video class="preview-video" muted loop preload="none" data-video-url="${video.url}"></video>`;
+                }
                 
                 return `
-                    <div class="video-card" onclick="watchVideo(${actualIndex})">
+                    <div class="video-card" data-video-index="${actualIndex}" onclick="watchVideo(${actualIndex})">
                         <div class="video-thumbnail">
                             ${thumbnailHTML}
                         </div>
@@ -4358,6 +4512,9 @@
                     </div>
                 `;
             }).join('');
+            
+            // Configurar preview de videos
+            setupVideoPreview();
         }
 
         function renderChannelShorts(userShorts, username, userId) {
