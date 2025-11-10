@@ -2885,6 +2885,17 @@
             // Detener el video limpiando el reproductor
             document.getElementById('mainVideoPlayer').innerHTML = '';
             
+            // Limpiar URL (quitar parámetros de video)
+            const cleanUrl = `${window.location.origin}${window.location.pathname}`;
+            window.history.pushState({}, '', cleanUrl);
+            
+            // Restaurar meta tags por defecto
+            document.title = 'MiTube - Comparte tus Videos';
+            document.querySelector('meta[property="og:title"]').setAttribute('content', 'MiTube - Comparte tus Videos');
+            document.querySelector('meta[property="og:description"]').setAttribute('content', '🎥 Plataforma para compartir videos y shorts | Sube contenido, conecta con creadores y descubre videos increíbles');
+            document.querySelector('meta[property="og:image"]').setAttribute('content', 'https://media.discordapp.net/attachments/783812369963810846/1437465112293408778/logo-transparente.png?ex=69135735&is=691205b5&hm=8215042f095f92e86c05b2d06cbd642a4122441e8972f0b31aaca15fe7d6ab52&=&format=webp&quality=lossless&width=1202&height=631');
+            document.querySelector('meta[property="og:url"]').setAttribute('content', 'https://yoyoyogogo.github.io/yoclon/');
+            
             document.getElementById('homeContainer').style.display = 'block';
             document.getElementById('shortsContainer').classList.remove('active');
             document.getElementById('watchPage').classList.remove('active');
@@ -3492,6 +3503,15 @@
             const displayVideos = filteredVideos.length > 0 ? filteredVideos : videos;
             const video = displayVideos[index];
             
+            // Actualizar URL con el ID del video (deep linking)
+            if (video.id) {
+                const newUrl = `${window.location.origin}${window.location.pathname}?v=${video.id}`;
+                window.history.pushState({ videoId: video.id }, '', newUrl);
+                
+                // Actualizar meta tags para compartir en Discord
+                updateMetaTags(video);
+            }
+            
             // Incrementar vistas
             const actualIndex = videos.findIndex(v => v === video);
             if (actualIndex !== -1 && video.id) {
@@ -3823,6 +3843,44 @@
                     </div>
                 `;
             }).join('');
+        }
+        
+        // Función para verificar si hay un video en la URL y reproducirlo
+        function checkVideoInUrl() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const videoId = urlParams.get('v');
+            
+            if (videoId && videos.length > 0) {
+                // Buscar el video por ID
+                const videoIndex = videos.findIndex(v => v.id === videoId);
+                
+                if (videoIndex !== -1) {
+                    // Reproducir el video automáticamente
+                    setTimeout(() => {
+                        watchVideo(videoIndex);
+                    }, 500);
+                }
+            }
+        }
+        
+        // Función para actualizar meta tags dinámicamente para compartir videos
+        function updateMetaTags(video) {
+            // Actualizar título
+            document.querySelector('meta[property="og:title"]').setAttribute('content', video.title);
+            document.title = `${video.title} - MiTube`;
+            
+            // Actualizar descripción
+            const description = video.description || `Video subido por ${video.uploadedBy || 'Usuario'}`;
+            document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+            
+            // Actualizar imagen (thumbnail del video)
+            if (video.thumbnail) {
+                document.querySelector('meta[property="og:image"]').setAttribute('content', video.thumbnail);
+            }
+            
+            // Actualizar URL
+            const videoUrl = `${window.location.origin}${window.location.pathname}?v=${video.id}`;
+            document.querySelector('meta[property="og:url"]').setAttribute('content', videoUrl);
         }
         
         // Función auxiliar para ajustar el contenedor según el aspect ratio del video
@@ -4373,7 +4431,10 @@
             }
             
             // Cargar videos
-            loadVideos();
+            await loadVideos();
+            
+            // Verificar si hay un video en la URL (deep linking)
+            checkVideoInUrl();
             
             // Mostrar modal de nombre si no existe usuario
             if (!currentUser) {
